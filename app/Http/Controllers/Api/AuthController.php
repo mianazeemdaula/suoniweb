@@ -129,7 +129,8 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
         if ($user !=null && $user->trashed()) {
-            return response()->json(['message' => 'Email not found'], 204);
+            $user->restore();
+            // return response()->json(['message' => 'Email not found'], 204);
         }
         if ($user) {
             if (Auth::attempt($credentials)) {
