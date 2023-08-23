@@ -51,7 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $avatar = '';
         if ($value == null) {
-            $avatar = "https://ui-avatars.com/api/?name=" . str_replace(' ', '+', $this->name);
+            $avatar = asset('images/avatar.jpg');
         } else if (strpos($value, 'http') !== false) {
             $avatar = $value;
         } else {
