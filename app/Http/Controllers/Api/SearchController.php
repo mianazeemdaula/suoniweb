@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\DB;
 
 class SearchController extends Controller
 {
+
+    function getAllInstruments()  {
+        $data = Instrument::where('status', true)->orderBy('order', 'asc')->get();
+        return response()->json($data, 200);
+    }
+
+    
     public function searchByName(Request $request)
     {
         $text = $request->text;

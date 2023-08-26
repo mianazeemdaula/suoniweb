@@ -83,7 +83,8 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::post('notificaiton-del-all', 'Api\NotificationController@deleteAll');
 
         // Search Tutors and Instruments by Name
-        Route::post('search-by-name', 'Api\SearchController@searchByName');
     });
-
+    
+    Route::post('search-by-name', 'Api\SearchController@searchByName');
+    Route::get('instruments', 'Api\SearchController@getAllInstruments');
 });
