@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Instrument extends Model
 {   protected $fillable = ['logo', 'name', 'status'];
-    protected $hidden = ['pivot', 'created_at', 'updated_at'];
+    protected $hidden = ['created_at', 'updated_at'];
 
 
     public function getLogoAttribute($value)

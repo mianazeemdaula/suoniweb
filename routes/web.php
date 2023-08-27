@@ -19,5 +19,5 @@ Route::get('/', function () {
 
 
 Route::get('/test', function(){
-    return \App\Models\User::findOrFail(7)->instruments()->withPivot('fee','group_fee')->get();
+    return \App\Models\User::findOrFail(7)->instruments;
 });
