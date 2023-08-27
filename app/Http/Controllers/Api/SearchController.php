@@ -36,4 +36,15 @@ class SearchController extends Controller
         $data['intruments'] = Instrument::where('name', 'like', "%${text}%")->where('status', true)->get();
         return response()->json(['data' => $data]);
     }
+
+    function teachersByInstrument($id)  {
+        $data =  User::with(['tutorRating', 'tutorToughtHours', 'instruments' => function($i) use($id){
+            $i->where('id',$id);
+        }, 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
+            $a->where('in_search', false);
+        })->withCount(['tutorLessions as active_students' => function ($a) {
+            $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+        }])->whereHas('instruments')->inRandomOrder()->get();
+        return response()->json($data, 200);
+    }
 }

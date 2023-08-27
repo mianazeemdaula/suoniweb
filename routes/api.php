@@ -87,4 +87,5 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
     Route::get('instruments', 'Api\SearchController@getAllInstruments');
+    Route::get('teachers-by-instrument/{id}', 'Api\SearchController@teachersByInstrument');
 });
