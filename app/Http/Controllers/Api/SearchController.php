@@ -55,7 +55,11 @@ class SearchController extends Controller
             }]);
         }])->where('id', $id)->first();
         if($data['tutors'])
-            $data['tutors']->load('instruments.pivot');
+            foreach ($data['tutors'] as $t) {
+                foreach ($t->instruments as $i) {
+                    $i->pivot = $i->pivot;
+                }
+            }
         return response()->json($data['tutors'] ?? [], 200);
     }
 }
