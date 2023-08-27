@@ -38,13 +38,22 @@ class SearchController extends Controller
     }
 
     function teachersByInstrument($id)  {
-        $data =  User::with(['tutorRating', 'tutorToughtHours', 'instruments' => function($i) use($id){
-            $i->where('id',$id);
-        }, 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
-            $a->where('in_search', false);
-        })->withCount(['tutorLessions as active_students' => function ($a) {
-            $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
-        }])->whereHas('instruments')->inRandomOrder()->get();
-        return response()->json($data, 200);
+        // $data =  User::with(['tutorRating', 'tutorToughtHours', 'instruments' => function($i) use($id){
+        //     $i->where('id',$id);
+        // }, 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
+        //     $a->where('in_search', false);
+        // })->withCount(['tutorLessions as active_students' => function ($a) {
+        //     $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+        // }])->whereHas('instruments')->inRandomOrder()->get();
+
+        $data = Instrument::with(['tutors' => function ($q) {
+            $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
+                $a->where('in_search', false);
+            })->inRandomOrder();
+            $q->withCount(['tutorLessions as active_students' => function ($a) {
+                $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+            }]);
+        }])->where('id', $id)->first();
+        return response()->json($data['tutors'] ?? [], 200);
     }
 }
