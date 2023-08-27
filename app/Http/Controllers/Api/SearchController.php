@@ -54,6 +54,8 @@ class SearchController extends Controller
                 $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
             }]);
         }])->where('id', $id)->first();
+        if($data['tutors'])
+            $data['tutors']->load('instruments');
         return response()->json($data['tutors'] ?? [], 200);
     }
 }
