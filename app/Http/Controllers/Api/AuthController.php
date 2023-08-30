@@ -265,12 +265,11 @@ class AuthController extends Controller
             $user->status = 'active';
             $user->save();
             $user->userable()->update(['bio' => $request->bio]);
-            // if($request->has('instruments')){
-            //     $user->instruments()->detach();
-            // }
+            $inst = [];
             foreach ($request->instruments as $val) {
-                $user->instruments()->attach($val['id'], ['fee' => $val['fee']]);
+                $inst[$val['id']] = ['fee' => $val['fee']];
             }
+            $user->instruments()->sync($inst);
             if ($user->has('languages')) {
                 $user->languages()->sync($request->languages);
             }
