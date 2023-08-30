@@ -265,9 +265,9 @@ class AuthController extends Controller
             $user->status = 'active';
             $user->save();
             $user->userable()->update(['bio' => $request->bio]);
-            if($request->has('instruments')){
-                $user->instruments()->detach();
-            }
+            // if($request->has('instruments')){
+            //     $user->instruments()->detach();
+            // }
             foreach ($request->instruments as $val) {
                 $user->instruments()->attach($val['id'], ['fee' => $val['fee']]);
             }
