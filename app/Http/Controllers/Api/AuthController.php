@@ -267,7 +267,7 @@ class AuthController extends Controller
             $user->userable()->update(['bio' => $request->bio]);
             $inst = [];
             foreach ($request->instruments as $val) {
-                $inst[$val['id']] = ['fee' => $val['fee']];
+                $inst[$val['id']] = ['fee' => $val['fee'], 'group_fee' => $val['group_fee']];
             }
             $user->instruments()->sync($inst);
             if ($user->has('languages')) {
