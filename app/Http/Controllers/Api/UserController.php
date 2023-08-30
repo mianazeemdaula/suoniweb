@@ -112,10 +112,11 @@ class UserController extends Controller
         $isTutor = $user->userable_type == 'App\Models\Tutor';
         $data['lessions'] = Lession::join('lession_logs', 'lession_logs.lession_id', '=', 'lessions.id')
             ->join('users', $isTutor ? 'lessions.student_id' :  'lessions.tutor_id', '=', 'users.id')
+            ->join('instruments','lessions.instrument_id', '=', 'instruments.id')
             ->groupBy('lessions.id', 'users.name', 'lessions.start_at')
             ->where($isTutor ? 'lessions.tutor_id' : 'lessions.student_id', $user->id)
             ->orderBy('lessions.start_at', 'desc')
-            ->get(['lessions.id', 'users.name', 'lessions.start_at', DB::raw('SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time) / 60) as value')]);
+            ->get(['lessions.id', 'users.name','users.image','instruments.name as inst_name', 'lessions.start_at', DB::raw('SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time) / 60) as value')]);
         return response()->json(['status' => true, 'data' => $data]);
     }
 
