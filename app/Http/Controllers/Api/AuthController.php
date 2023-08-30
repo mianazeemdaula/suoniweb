@@ -250,6 +250,7 @@ class AuthController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'instruments' => 'required',
+                // 'categories' => 'required',
                 'bio' => 'required|string|min:4',
             ]);
             if ($validator->fails()) {
@@ -266,10 +267,7 @@ class AuthController extends Controller
             $user->save();
             $user->userable()->update(['bio' => $request->bio]);
             // $user->instrumentCats()->sync($request->categories);
-            $user->instruments()->detach();
-            foreach ($request->instruments as $val) {
-                $user->instruments()->attach($val['id'], ['fee' => $val['fee']]);
-            }
+            $user->instruments()->sync($request->instruments);
             if ($user->has('languages')) {
                 $user->languages()->sync($request->languages);
             }
