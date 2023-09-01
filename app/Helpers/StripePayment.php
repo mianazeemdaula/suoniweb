@@ -10,16 +10,16 @@ use Stripe\Exception\CardException;
 
 class StripePayment{
     
-    static public function cardPayment(PaymentCard $card, $amount)
+    static public function cardPayment($card,$month,$year, $cvc, $amount)
     {
         $stripe = Stripe::setApiKey(env('STRIPE_SECRET'));
         try {
             $token = Token::create([
                 'card' => [
-                    'number' => $card->card_no,
-                    'exp_month' => $card->expiry_month,
-                    'exp_year' => $card->expiry_year,
-                    'cvc' => $card->cvc,
+                    'number' => $card,
+                    'exp_month' => $month,
+                    'exp_year' => $year,
+                    'cvc' => $cvc,
                 ],
             ]);
 

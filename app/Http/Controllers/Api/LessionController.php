@@ -68,8 +68,13 @@ class LessionController extends Controller
                 'tutor_id' => 'required|integer',
                 'duration' => 'required|integer',
                 'times' => 'required',
+                'cvc' => 'required',
+                'card' => 'required',
+                'expiry_m' => 'required',
+                'expiry_y' => 'required',
             ]);
             $group = $request->is_group ?? false;
+            $totalAmount = 0;
             if ($validator->fails()) {
                 return response()->json(['required' => $validator->errors()->first()], 200);
             } else {
@@ -96,6 +101,7 @@ class LessionController extends Controller
                         $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->pivot->fee;
                         $lession->tutor_time_id = $value['id'];
                         $lession->save();
+                        $totalAmount += $lession->fee;
                     }
                     if($group){
                         // find the last user if lesson already canceld and same user request it again
@@ -107,10 +113,16 @@ class LessionController extends Controller
                             $user->allowed = false;
                             $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->pivot->fee ?? 1;
                             $user->save();
+                            $totalAmount += $user->fee;
                         }else{
                             $gr->allowed = false;
                             $gr->save();
                         }
+                    }
+                    $payment = \App\Helpers\StripePayment::cardPayment($request->card,$request->expiry_m, $request->expiry_y, $request->cvc, intval($totalAmount) * 100);
+                    if($payment && !isset($payment['id'])){
+                        DB::rollback();
+                        return response()->json(['message' => $payment['message']], 422);
                     }
                     $lessions[] = $lession;
                     $notification = new Notifications();
