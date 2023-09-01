@@ -93,6 +93,7 @@ class LessionController extends Controller
                         $lession->lession_duration = $value['duration'];
                         $lession->start_at = $startDate;
                         $lession->end_at = $endDate;
+                        $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->pivot->fee;
                         $lession->tutor_time_id = $value['id'];
                         $lession->save();
                     }
@@ -104,6 +105,7 @@ class LessionController extends Controller
                             $user->user_id = $request->user()->id;
                             $user->lesson_id = $lession->id;
                             $user->allowed = false;
+                            $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->pivot->fee ?? 1;
                             $user->save();
                         }else{
                             $gr->allowed = false;
