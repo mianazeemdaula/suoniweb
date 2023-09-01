@@ -72,6 +72,7 @@ class LessionController extends Controller
                 'card' => 'required',
                 'expiry_m' => 'required',
                 'expiry_y' => 'required',
+                'fee' => 'required',
             ]);
             $group = $request->is_group ?? false;
             $totalAmount = 0;
@@ -98,7 +99,8 @@ class LessionController extends Controller
                         $lession->lession_duration = $value['duration'];
                         $lession->start_at = $startDate;
                         $lession->end_at = $endDate;
-                        $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
+                        // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
+                        $lession->fee = $request->fee;
                         $lession->tutor_time_id = $value['id'];
                         $lession->save();
                         $totalAmount += $lession->fee;
@@ -111,7 +113,8 @@ class LessionController extends Controller
                             $user->user_id = $request->user()->id;
                             $user->lesson_id = $lession->id;
                             $user->allowed = false;
-                            $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
+                            // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
+                            $user->fee = $request->fee;
                             $user->save();
                             $totalAmount += $user->fee;
                         }else{
