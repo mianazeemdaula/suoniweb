@@ -98,7 +98,7 @@ class LessionController extends Controller
                         $lession->lession_duration = $value['duration'];
                         $lession->start_at = $startDate;
                         $lession->end_at = $endDate;
-                        $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->pivot->fee;
+                        $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
                         $lession->tutor_time_id = $value['id'];
                         $lession->save();
                         $totalAmount += $lession->fee;
@@ -111,7 +111,7 @@ class LessionController extends Controller
                             $user->user_id = $request->user()->id;
                             $user->lesson_id = $lession->id;
                             $user->allowed = false;
-                            $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->pivot->fee ?? 1;
+                            $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
                             $user->save();
                             $totalAmount += $user->fee;
                         }else{
@@ -126,7 +126,7 @@ class LessionController extends Controller
                     }
                     $lessions[] = $lession;
                     $notification = new Notifications();
-                    $notification->user_id = $lession->tutor_id;
+                    $notification->user_id = $lession->tutor_id;    
                     $notification->title = 'Confirmation Request';
                     $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
                     $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
