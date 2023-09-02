@@ -90,6 +90,6 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
     Route::get('teachers-by-instrument/{id}', 'Api\SearchController@teachersByInstrument');
 });
 
-Route::get("/getstripsecret/{amount}", function ($amount) {
-    return \App\Helpers\StripePayment::getPaymentIntentClientSecret($amount);
+Route::post("/getstripsecret", function (Request $request) {
+    return \App\Helpers\StripePayment::getPaymentIntentClientSecret($request);
 });

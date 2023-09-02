@@ -8,6 +8,7 @@ use Stripe\Token;
 use Stripe\Charge;
 use Stripe\PaymentIntent;
 use Stripe\Exception\CardException;
+use Illuminate\Http\Request;
 
 class StripePayment{
     
@@ -41,11 +42,11 @@ class StripePayment{
         }
     }
 
-    static public function getPaymentIntentClientSecret($amount) {
+    static public function getPaymentIntentClientSecret(Request $request) {
         try {
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $paymentIntent = PaymentIntent::create([
-                'amount' => $amount,
+                'amount' => $request->amount,
                 'currency' => 'usd',
                 'payment_method_types' => ['card'],
                 'description' => 'Payment for lessons',
