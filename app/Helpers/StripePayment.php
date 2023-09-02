@@ -6,6 +6,7 @@ use App\Models\PaymentCard;
 use Stripe\Stripe;
 use Stripe\Token;
 use Stripe\Charge;
+use Stripe\PaymentIntent;
 use Stripe\Exception\CardException;
 
 class StripePayment{
@@ -23,6 +24,8 @@ class StripePayment{
                 ],
             ]);
 
+            return $token;
+
             $charge = Charge::create([
                 'card' => $token->id,
                 'currency' => 'USD',
@@ -35,6 +38,23 @@ class StripePayment{
             $code = $e->getHttpStatus();
             $message = $e->getMessage();
             return $error;
+        }
+    }
+
+    static public function getPaymentIntentClientSecret($amount) {
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            $paymentIntent = PaymentIntent::create([
+                'amount' => $amount,
+                'currency' => 'usd',
+                'payment_method_types' => ['card'],
+                'description' => 'Payment for lessons',
+            ]);
+            // $clientSecret = $paymentIntent->client_secret;
+            return response()->json($paymentIntent, 200);
+        
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            return response()->json(['error' => $e->getMessage()],422);
         }
     }
 
