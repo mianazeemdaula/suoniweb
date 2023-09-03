@@ -26,19 +26,19 @@ class PaymentHooksController extends Controller
 
             switch ($event->type) {
             case 'payment_intent.amount_capturable_updated':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.canceled':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.created':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.partially_funded':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.payment_failed':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.processing':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data;
             case 'payment_intent.requires_action':
-              $paymentIntent = $event->data->object;
+              $paymentIntent = $event->data['object'];
             case 'payment_intent.succeeded':
               $metadata = $event->data['object']['metadata'];
               if($metadata['type'] == 'lessons') {
