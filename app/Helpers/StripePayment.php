@@ -51,8 +51,8 @@ class StripePayment{
                 'payment_method_types' => ['card'],
                 'description' => 'Payment for lessons',
                 'metadata' => [
-                    'lessons' => [2,65,98,25],
-                    'group_lessons' => [25,6,89],
+                    'lessons' => json_encode([2,65,98,25]),
+                    'group_lessons' => json_encode([25,6,89]),
                     'type' => 'lessons',
                   ],
             ]);
