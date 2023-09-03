@@ -10,6 +10,7 @@ class PaymentHooksController extends Controller
 {
     function stripePayment(Request $request) {
         if($request->id) {
+            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
             $paymentIntent = \Stripe\PaymentIntent::retrieve(
                 $request->id
             );
