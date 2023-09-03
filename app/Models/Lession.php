@@ -9,6 +9,10 @@ class Lession extends Model
 {
     protected $fillable = ['instrument_id', 'start_date', 'end_date', 'repeat', 'student_id', 'tutor_id', 'lession_duration'];
 
+    protected $casts = [
+        'fee_paid' => 'boolean',
+    ];
+
     public function reviews()
     {
         return $this->hasMany(Review::class);
