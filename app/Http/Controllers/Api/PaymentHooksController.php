@@ -20,7 +20,7 @@ class PaymentHooksController extends Controller
             PaymentGatwayLog::create([
                 'gatway_name' => 'stripe',
                 'response' => $event->all(),
-                'data' => $event->data->metadata,
+                'data' => $event->data['metadata'],
                 'status' => $event->type,
             ]);
         }
