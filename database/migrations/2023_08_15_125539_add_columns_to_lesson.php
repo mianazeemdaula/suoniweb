@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('lessions', function (Blueprint $table) {
             $table->float('fee')->after('tutor_time_id')->default(0);
+            $table->boolean('fee_paid')->after('fee')->default(false);
         });
     }
 
@@ -22,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('lessions', function (Blueprint $table) {
-            $table->dropColumn('fee');
+            $table->dropColumn(['fee', 'fee_paid']);
         });
     }
 };
