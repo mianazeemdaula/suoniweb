@@ -16,36 +16,48 @@ class PaymentHooksController extends Controller
 {
     function stripePayment(Request $event) {
         if($event->id) {
-            Log::debug($event->data);
+            // Log::debug($event->data);
             PaymentGatwayLog::create([
                 'gatway_name' => 'stripe',
                 'response' => $event->all(),
                 'data' => $event->data['object']['metadata'],
                 'status' => $event->type,
             ]);
+
+            switch ($event->type) {
+            case 'payment_intent.amount_capturable_updated':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.canceled':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.created':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.partially_funded':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.payment_failed':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.processing':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.requires_action':
+              $paymentIntent = $event->data->object;
+            case 'payment_intent.succeeded':
+              $metadata = $event->data['object']['metadata'];
+              if($metadata['type'] == 'lessons') {
+                foreach(json_decode($metadata['lessons']) as $lesson) {
+                    $lesson = \App\Models\Lession::find($lesson);
+                    $lesson->fee_paid = true;
+                    $lesson->save();
+                }
+                foreach(json_decode($metadata['group_lessons']) as $group_lesson) {
+                    $group_lesson = \App\Models\GroupUser::find($group_lesson);
+                    $group_lesson->fee_paid = true;
+                    $group_lesson->save();
+                }
+              }
+            default:
+              echo 'Received unknown event type ' . $event->type;
+          }
         }
-        // switch ($event->type) {
-        //     case 'payment_intent.amount_capturable_updated':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.canceled':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.created':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.partially_funded':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.payment_failed':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.processing':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.requires_action':
-        //       $paymentIntent = $event->data->object;
-        //     case 'payment_intent.succeeded':
-        //       $paymentIntent = $event->data->object;
-                //metadata
-        //     // ... handle other event types
-        //     default:
-        //       echo 'Received unknown event type ' . $event->type;
-        //   }
+        
         
         // Log::debug($request->all());
     }
