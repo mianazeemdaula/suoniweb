@@ -50,8 +50,12 @@ class StripePayment{
                 'currency' => 'usd',
                 'payment_method_types' => ['card'],
                 'description' => 'Payment for lessons',
+                'metadata' => [
+                    'lessons' => [2,65,98,25],
+                    'group_lessons' => [25,6,89],
+                    'type' => 'lessons',
+                  ],
             ]);
-            // $clientSecret = $paymentIntent->client_secret;
             return response()->json($paymentIntent, 200);
         
         } catch (\Stripe\Exception\ApiErrorException $e) {
