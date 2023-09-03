@@ -14,11 +14,7 @@ class PaymentHooksController extends Controller
 {
     function stripePayment(Request $request) {
         if($request->id) {
-            Stripe::setApiKey(env('STRIPE_SECRET'));
-            $paymentIntent = PaymentIntent::retrieve(
-                $request->id
-            );
-            Log::debug($paymentIntent);
+            Log::debug($request->data);
         }
         // switch ($event->type) {
         //     case 'payment_intent.amount_capturable_updated':
