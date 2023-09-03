@@ -63,6 +63,22 @@ class StripePayment{
         }
     }
 
+    static public function PaymentIntent($amount, Array $data = [], $currency = 'usd') {
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            return PaymentIntent::create([
+                'amount' => $amount,
+                'currency' => $currency,
+                'payment_method_types' => ['card'],
+                'description' => 'Payment for lessons',
+                'metadata' => $data,
+            ]);
+        
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            return ['message' => $e->getMessage()];
+        }
+    }
+
     // $payment = StripePayment::cardPayment(PaymentCard::find($request->card), intval($request->total_amount) * 100);
     //             if($payment && isset($payment['id'])){
     //                 $pay = new OrderPayment();

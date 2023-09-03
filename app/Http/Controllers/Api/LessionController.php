@@ -64,96 +64,97 @@ class LessionController extends Controller
     {
         DB::beginTransaction();
         try {
-            $validator = Validator::make($request->all(), [
+            $request->validate([
                 'tutor_id' => 'required|integer',
                 'duration' => 'required|integer',
                 'times' => 'required',
-                'cvc' => 'required',
-                'card' => 'required',
-                'expiry_m' => 'required',
-                'expiry_y' => 'required',
                 'fee' => 'required',
             ]);
             $group = $request->is_group ?? false;
             $totalAmount = 0;
-            if ($validator->fails()) {
-                return response()->json(['required' => $validator->errors()->first()], 200);
-            } else {
-                $notifications = [];
-                $lessions = [];
-                foreach ($request->times as $key => $value) {
-                    $startDate = Carbon::parse($value['start'], auth()->user()->time_zone)->setTimezone('UTC');
-                    $endDate = Carbon::parse($value['end'], auth()->user()->time_zone)->setTimezone('UTC');
-                    $times[] = $value;
-                    $lession = $newLesson = Lession::where('tutor_id',$request->tutor_id)
-                    ->where('status','!=','canceled')
-                    ->where('status','!=','finished')
-                    ->where('status','!=','reviewed')
-                    ->where('tutor_time_id',$value['id'])
-                    ->orderBy('id','desc')->first();
-                    if(!$lession){
-                        $lession = new Lession();
-                        $lession->instrument_id = $request->instrument_id;
-                        $lession->student_id = $request->user()->id;
-                        $lession->tutor_id = $request->tutor_id;
-                        $lession->lession_duration = $value['duration'];
-                        $lession->start_at = $startDate;
-                        $lession->end_at = $endDate;
-                        // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
-                        $lession->fee = $request->fee;
-                        $lession->tutor_time_id = $value['id'];
-                        $lession->save();
-                        $totalAmount += $lession->fee;
+            $notifications = [];
+            $lessions = [];
+            $lessonIds = [];
+            $groupIds = [];
+            foreach ($request->times as $key => $value) {
+                $startDate = Carbon::parse($value['start'], auth()->user()->time_zone)->setTimezone('UTC');
+                $endDate = Carbon::parse($value['end'], auth()->user()->time_zone)->setTimezone('UTC');
+                $times[] = $value;
+                $lession = $newLesson = Lession::where('tutor_id',$request->tutor_id)
+                ->where('status','!=','canceled')
+                ->where('status','!=','finished')
+                ->where('status','!=','reviewed')
+                ->where('tutor_time_id',$value['id'])
+                ->orderBy('id','desc')->first();
+                if(!$lession){
+                    $lession = new Lession();
+                    $lession->instrument_id = $request->instrument_id;
+                    $lession->student_id = $request->user()->id;
+                    $lession->tutor_id = $request->tutor_id;
+                    $lession->lession_duration = $value['duration'];
+                    $lession->start_at = $startDate;
+                    $lession->end_at = $endDate;
+                    // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
+                    $lession->fee = $request->fee;
+                    $lession->tutor_time_id = $value['id'];
+                    $lession->save();
+                    $totalAmount += $lession->fee;
+                    $lessonIds[] = $lession->id;
+                }
+                if($group){
+                    // find the last user if lesson already canceld and same user request it again
+                    $gr =  GroupUser::where('lesson_id',$lession->id)->where('user_id',$request->user()->id)->first();
+                    if(!$gr){
+                        $user = new GroupUser;
+                        $user->user_id = $request->user()->id;
+                        $user->lesson_id = $lession->id;
+                        $user->allowed = false;
+                        // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
+                        $user->fee = $request->fee;
+                        $user->save();
+                        $totalAmount += $user->fee;
+                        $groupIds = $user->id;
+                    }else{
+                        $gr->allowed = false;
+                        $gr->save();
                     }
-                    if($group){
-                        // find the last user if lesson already canceld and same user request it again
-                        $gr =  GroupUser::where('lesson_id',$lession->id)->where('user_id',$request->user()->id)->first();
-                        if(!$gr){
-                            $user = new GroupUser;
-                            $user->user_id = $request->user()->id;
-                            $user->lesson_id = $lession->id;
-                            $user->allowed = false;
-                            // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
-                            $user->fee = $request->fee;
-                            $user->save();
-                            $totalAmount += $user->fee;
-                        }else{
-                            $gr->allowed = false;
-                            $gr->save();
-                        }
-                    }
-                    $payment = \App\Helpers\StripePayment::cardPayment($request->card,$request->expiry_m, $request->expiry_y, $request->cvc, intval($totalAmount) * 100);
-                    if($payment && !isset($payment['id'])){
-                        DB::rollback();
-                        return response()->json(['message' => $payment['message']], 422);
-                    }
-                    $lessions[] = $lession;
-                    $notification = new Notifications();
-                    $notification->user_id = $lession->tutor_id;    
-                    $notification->title = 'Confirmation Request';
-                    $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
-                    $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                    $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
-                    $notification->save();
-                    $notifications[] = $notification->id;
+                }
+                $paymentmetadata = [
+                    'lessons' => json_encode($lessonIds),
+                    'group_lessons' => json_encode($groupIds),
+                    'type' => 'lessons',
+                ];
+                $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount) * 100,$paymentmetadata);
+                if($payment && !isset($payment['id'])){
+                    DB::rollback();
+                    return response()->json(['message' => $payment['message']], 422);
+                }
+                $lessions[] = $lession;
+                $notification = new Notifications();
+                $notification->user_id = $lession->tutor_id;    
+                $notification->title = 'Confirmation Request';
+                $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
+                $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
+                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+                $notification->save();
+                $notifications[] = $notification->id;
 
-                    // Notifications for Student
-                    $notification = new Notifications();
-                    $notification->user_id = $request->user()->id;
-                    $notification->title = 'Request for lesson sent';
-                    $notification->body = $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
-                    $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                    $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
-                    $notification->save();
-                    $notifications[] = $notification->id;
-                }
-                DB::commit();
-                $notifications = Notifications::whereIn('id', $notifications)->get();
-                foreach ($notifications as $value) {
-                    Fcm::sendNotification($value);
-                }
-                return response()->json(['status' => true, 'data' => $lessions[0]], 200);
+                // Notifications for Student
+                $notification = new Notifications();
+                $notification->user_id = $request->user()->id;
+                $notification->title = 'Request for lesson sent';
+                $notification->body = $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+                $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
+                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+                $notification->save();
+                $notifications[] = $notification->id;
             }
+            DB::commit();
+            $notifications = Notifications::whereIn('id', $notifications)->get();
+            foreach ($notifications as $value) {
+                Fcm::sendNotification($value);
+            }
+            return response()->json(['status' => true, 'data' => $lessions[0], 'payment' => $payment], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
