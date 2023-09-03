@@ -9,7 +9,12 @@ use Illuminate\Support\Facades\Log;
 class PaymentHooksController extends Controller
 {
     function stripePayment(Request $request) {
-        Log::debug($request->all());
+        if($request->id) {
+            $paymentIntent = \Stripe\PaymentIntent::retrieve(
+                $request->id
+            );
+            Log::debug($paymentIntent);
+        }
         // switch ($event->type) {
         //     case 'payment_intent.amount_capturable_updated':
         //       $paymentIntent = $event->data->object;
@@ -31,5 +36,7 @@ class PaymentHooksController extends Controller
         //     default:
         //       echo 'Received unknown event type ' . $event->type;
         //   }
+        
+        // Log::debug($request->all());
     }
 }
