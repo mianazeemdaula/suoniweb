@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\PaymentGatwayLog;
+
 // Stripe
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -15,6 +17,12 @@ class PaymentHooksController extends Controller
     function stripePayment(Request $event) {
         if($event->id) {
             Log::debug($event->data);
+            PaymentGatwayLog::create([
+                'gatway_name' => 'stripe',
+                'response' => $event->all(),
+                'data' => $event->data,
+                'status' => $event->type,
+            ]);
         }
         // switch ($event->type) {
         //     case 'payment_intent.amount_capturable_updated':
