@@ -19,6 +19,6 @@ Route::get('/', function () {
 
 
 Route::get('/test', function(){
-    // return \App\Models\User::findOrFail(7)->instruments;
+    return \App\Models\PaymentGatwayLog::latest()->take(10)->get();
     return \App\Helpers\StripePayment::cardPayment('4242424242424242', 12, 2025, 123, 100);
 });
