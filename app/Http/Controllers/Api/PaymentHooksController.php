@@ -12,9 +12,9 @@ use Stripe\PaymentIntent;
 
 class PaymentHooksController extends Controller
 {
-    function stripePayment(Request $request) {
-        if($request->id) {
-            Log::debug($request->data);
+    function stripePayment(Request $event) {
+        if($event->id) {
+            Log::debug($event->data);
         }
         // switch ($event->type) {
         //     case 'payment_intent.amount_capturable_updated':
@@ -33,6 +33,7 @@ class PaymentHooksController extends Controller
         //       $paymentIntent = $event->data->object;
         //     case 'payment_intent.succeeded':
         //       $paymentIntent = $event->data->object;
+                //metadata
         //     // ... handle other event types
         //     default:
         //       echo 'Received unknown event type ' . $event->type;
