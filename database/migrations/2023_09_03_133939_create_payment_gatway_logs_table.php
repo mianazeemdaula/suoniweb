@@ -17,6 +17,7 @@ return new class extends Migration
             $table->json('response');
             $table->json('data')->nullable();
             $table->string('status',30);
+            $table->float('amount')->default(0);
             $table->timestamps();
         });
     }

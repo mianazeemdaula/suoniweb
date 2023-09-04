@@ -47,17 +47,12 @@ class StripePayment{
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $paymentIntent = PaymentIntent::create([
                 'amount' => $request->amount,
-                'currency' => 'usd',
+                'currency' => $request->curreny ?? 'usd',
                 'payment_method_types' => ['card'],
-                'description' => 'Payment for lessons',
-                'metadata' => [
-                    'lessons' => json_encode([2,65,98,25]),
-                    'group_lessons' => json_encode([25,6,89]),
-                    'type' => 'lessons',
-                  ],
+                'description' => $request->description,
+                'metadata' => $request->data,
             ]);
             return response()->json($paymentIntent, 200);
-        
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json(['error' => $e->getMessage()],422);
         }
