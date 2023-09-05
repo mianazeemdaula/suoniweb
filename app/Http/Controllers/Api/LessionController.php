@@ -189,18 +189,44 @@ class LessionController extends Controller
                     $time->save();
                 }
                 // If it is a groups lesson and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id != $user->id && $lession->instrument  == null){
+                if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument  == 21)){
                     $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     if($group){
+                        $user->updateBalance($group->fee, $group->user_id, 'Received');
                         $group->delete();
                     }
                     $lession->status = $lastStatus;
                     $lession->save();
                 }
+                // if request is canceled by tutor 
+                // return the balance to student
+                if($request->status == 'canceled' && $lession->tutor_id == $user->id){
+                    $lession->student()->updateBalance($lession->fee, $user->id, 'Received');
+                }
+
+                // if lesson is finished by tutor
+                // pay the balance to tutor
+
+                if($request->status == 'finished'){
+                    if($lession->instrument  == null || $lession->instrument  == 21){
+                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                        foreach ($groups as $g) {
+                            $payFee = $g->fee * 0.8;
+                            $studentId = $g->user_id;
+                            $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
+                        }
+                    }else{
+                        $payFee = $lession->fee * 0.8;
+                        $studentId = $lession->student_id;
+                        $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
+                    }
+                }
             }
             if ($request->status == 'approved' || $request->status == 'canceled' || $request->status == 'finished') {
                 // update the tutor avaialble time
                 if ($request->status == 'approved') {
+
+                    // update the tutor avaialble time
                     $time = Carbon::parse($lession->start_at, 'UTC')->setTimezone($lession->tutor->time_zone);
                     $time = TutorTime::find($lession->tutor_time_id);
                     if ($time && !$time->is_group) {

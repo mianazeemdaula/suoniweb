@@ -19,6 +19,9 @@ Route::get('/', function () {
 
 
 Route::get('/test', function(){
+    $user = \App\Models\User::find(1);
+    $user->updateBalance(10, 2, 'Earning from lesson');
+    return $user->balance;
     return \App\Models\PaymentGatwayLog::latest()->take(10)->get();
     return \App\Helpers\StripePayment::cardPayment('4242424242424242', 12, 2025, 123, 100);
 });

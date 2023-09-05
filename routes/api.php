@@ -91,8 +91,11 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
 
     // Api Namespace
     Route::post('stripe-pay', 'Api\PaymentHooksController@stripePayment');
+    Route::any('waapihooks','Api\PaymentHooksController@wappiAppHooks');
 });
 
 Route::post("/getstripsecret", function (Request $request) {
     return \App\Helpers\StripePayment::getPaymentIntentClientSecret($request);
 });
+
+

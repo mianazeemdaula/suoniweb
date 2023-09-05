@@ -9,12 +9,16 @@ use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use App\Traits\TransactionTrait;
+
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, HasApiTokens, HasRoles, SoftDeletes;
+    use TransactionTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -169,4 +173,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $query->whereHas($relation, $constraint)
             ->with([$relation => $constraint]);
     }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
 }
