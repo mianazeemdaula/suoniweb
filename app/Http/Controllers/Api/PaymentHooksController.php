@@ -63,7 +63,7 @@ class PaymentHooksController extends Controller
     }
 
 
-    function wappiAppHooks() {
+    function wappiAppHooks(Request $request) {
       Log::debug($request->all()); 
     }
 }
