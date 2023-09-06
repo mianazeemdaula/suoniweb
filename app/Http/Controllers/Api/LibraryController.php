@@ -14,7 +14,7 @@ class LibraryController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $user = auth()->user();
         $data = Library::where('student_id', $user->id)->get();
         return response()->json(['status' => true, 'data' => $data]);
         $data = User::withAndWhereHas('libraries', function ($q) use ($user) {
@@ -53,6 +53,7 @@ class LibraryController extends Controller
         $data = User::has('libraries')->with('libraries')->get();
         return response()->json(['status' => true, 'data' => $data]);
     }
+
     public function show($id)
     {
         $data = Library::where('student_id', Auth::user()->id)->get();
