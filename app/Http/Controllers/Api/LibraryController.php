@@ -33,29 +33,25 @@ class LibraryController extends Controller
     public function store(Request $request)
     {
         //
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'title' => 'required|min:3',
             'doc' => 'required|mimes:pdf,jpg,png,jpeg',
         ]);
-        if ($validator->fails()) {
-            return response()->json(['required' => $validator->errors()->first()], 200);
-        } else {
-            $fileName = '';
-            if ($request->hasFile('doc')) {
-                $file = $request->doc;
-                $name = time() . '.' . $file->getClientOriginalExtension();
-                $file->move('documents', $name);
-                $fileName = 'documents/' . $name;
-            }
-            $lib = new Library();
-            $lib->student_id = $request->user()->id;
-            $lib->title = $request->title;
-            $lib->is_lession = $request->has('is_lession') ?  $request->is_lession : false;
-            $lib->doc = $fileName;
-            $lib->save();
-            $data = User::has('libraries')->with('libraries')->get();
-            return response()->json(['status' => true, 'data' => $data]);
+        $fileName = '';
+        if ($request->hasFile('doc')) {
+            $file = $request->doc;
+            $name = time() . '.' . $file->getClientOriginalExtension();
+            $file->move('documents', $name);
+            $fileName = 'documents/' . $name;
         }
+        $lib = new Library();
+        $lib->student_id = $request->user()->id;
+        $lib->title = $request->title;
+        $lib->is_lession = $request->has('is_lession') ?  $request->is_lession : false;
+        $lib->doc = $fileName;
+        $lib->save();
+        $data = User::has('libraries')->with('libraries')->get();
+        return response()->json(['status' => true, 'data' => $data]);
     }
     public function show($id)
     {
