@@ -11,6 +11,11 @@ class Transaction extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'user_id' => 'integer',
+        'user_from' => 'integer',
+    ];
+
     protected $fillable = [
         'amount',
         'type',
@@ -25,5 +30,10 @@ class Transaction extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function userFrom(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_from');
     }
 }
