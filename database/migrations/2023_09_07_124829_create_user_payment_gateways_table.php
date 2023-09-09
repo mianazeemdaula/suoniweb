@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('payment_gateway_id');
             $table->string('account')->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }
