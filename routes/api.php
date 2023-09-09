@@ -84,6 +84,8 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         
         // Transactions
         Route::resource('transactions', 'Api\TransactionController');
+        Route::resource('due-transactions', 'Api\DueTransactionController');
+        Route::resource('user-payment-gateway', 'Api\UserPaymentGatewayController');
     });
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
