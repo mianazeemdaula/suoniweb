@@ -189,7 +189,7 @@ class LessionController extends Controller
                     $time->save();
                 }
                 // If it is a groups lesson and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument  == 21)){
+                if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument_id  == 21)){
                     $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     if($group){
                         $user->updateBalance($group->fee, $group->user_id, 'Received');
@@ -208,7 +208,7 @@ class LessionController extends Controller
                 // pay the balance to tutor
 
                 if($request->status == 'finished'){
-                    if($lession->instrument  == null || $lession->instrument  == 21){
+                    if($lession->instrument  == null || $lession->instrument_id  == 21){
                         $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                         foreach ($groups as $g) {
                             $payFee = $g->fee * 0.8;
@@ -285,7 +285,7 @@ class LessionController extends Controller
             $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument','group.user'])->find($id);
             return response(['status' => true, 'data' => $lession]);
         } catch (Exception $ex) {
-            return response()->json(['status' => $ex], 204);
+            return response()->json(['message' => $ex], 422);
         }
     }
 
