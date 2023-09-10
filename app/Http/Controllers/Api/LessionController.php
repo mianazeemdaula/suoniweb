@@ -298,7 +298,7 @@ class LessionController extends Controller
     {
         $request->validate([
             'lession_id' => 'required',
-            'note' => 'note',
+            'note' => 'required',
         ]);
         $note = new LessionNotes();
         $note->lession_id = $request->lession_id;
