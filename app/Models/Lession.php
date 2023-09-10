@@ -35,7 +35,7 @@ class Lession extends Model
 
     public function notes()
     {
-        return $this->hasMany(LessionNotes::class);
+        return $this->hasMany(LessionNotes::class,'lession_id');
     }
 
     public function times()

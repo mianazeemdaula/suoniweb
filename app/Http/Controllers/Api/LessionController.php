@@ -296,6 +296,10 @@ class LessionController extends Controller
 
     public function addNote(Request $request)
     {
+        $request->validate([
+            'lession_id' => 'required',
+            'note' => 'note',
+        ]);
         $note = new LessionNotes();
         $note->lession_id = $request->lession_id;
         $note->note = $request->note;
