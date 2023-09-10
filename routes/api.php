@@ -56,6 +56,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::post('add-lession-time', 'Api\LessionController@addLessionTime');
         Route::post('lession-update-sheets', 'Api\LessionController@updateMusicSheets');
         Route::post('lesson-group-user-update', 'Api\LessionController@updateGroupUser');
+        Route::post('lesson-accept-all', 'Api\LessionController@acceptAllRequest');
         
         // Lesson Request
         Route::resource('lession-request', 'Api\LessionRequestController');

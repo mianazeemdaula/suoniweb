@@ -126,7 +126,7 @@ class LessionController extends Controller
                 $notification->title = 'Confirmation Request';
                 $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession', 'status' => 'pending']);
                 $notification->save();
                 $notifications[] = $notification->id;
 
@@ -136,7 +136,7 @@ class LessionController extends Controller
                 $notification->title = 'Request for lesson sent';
                 $notification->body = $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession', 'status' => 'pending']);
                 $notification->save();
                 $notifications[] = $notification->id;
             }
@@ -400,5 +400,49 @@ class LessionController extends Controller
             }
         }
         return $this->show($request->lesson_id);
+    }
+
+
+    public function acceptAllRequest(Request $request) {
+        $lessons = Lession::where('tutor_id', $request->user()->id)->where('status', 'pending')
+        ->where('fee_paid', true)->get();
+        foreach ($variable as $lession) {
+
+            // Delete all the request notifications for this lesson
+            Notification::whereJsonContains('data->id', $lession->id)
+                ->whereJsonContains('data->type','lession')
+                ->delete();
+
+            $lession->status = 'approved';
+            $lession->save();
+            // update the tutor avaialble time
+            $time = Carbon::parse($lession->start_at, 'UTC')->setTimezone($lession->tutor->time_zone);
+            $time = TutorTime::find($lession->tutor_time_id);
+            if ($time && !$time->is_group) {
+                $time->booked = true;
+                $time->save();
+            }
+            // if tutor accepted the request and its a group
+            if($lession->instrument_id  == 21){
+                $gr = GroupUser::where('user_id',$lession->student_id)
+                ->where('lesson_id',$lession->id)->first();
+                if($gr){    
+                    $gr->allowed = true;
+                    $gr->save();
+                }
+            }
+
+            // Send notification to student
+            $notification = new Notifications();
+            $notification->user_id = $lession->student_id;
+            $notification->title = 'Lesson ' . ucfirst($request->status);
+            $notification->body = $lession->instrument_id = 21 ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+            $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
+            $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession', 'status' => 'approved']);
+            $notification->save();
+            Fcm::sendNotification($notification);
+        }
+        $data = ['message' => 'All lessons accepted', 'count' => $lessons->count()];
+        return response()->json($data, 200);
     }
 }
