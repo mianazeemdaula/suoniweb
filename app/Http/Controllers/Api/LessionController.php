@@ -174,119 +174,118 @@ class LessionController extends Controller
 
     public function update(Request $request, $id)
     {
-        try {
-            $lession = Lession::find($id);
-            $lastStatus =  $lession->status;
-            $lession->status = $request->status;
-            $lession->save();
-            $user = $request->user();
-            $sendToId = 1;
-            $body = '';
-            if ($request->status == 'finished' || $request->status == 'canceled') {
-                $time = TutorTime::find($lession->tutor_time_id);
-                if ($time) {
-                    $time->booked = false;
-                    $time->save();
+        $request->validate([
+            'status' => 'required',
+        ]);
+        $lession = Lession::find($id);
+        $lastStatus =  $lession->status;
+        $lession->status = $request->status;
+        $lession->save();
+        $user = $request->user();
+        $sendToId = 1;
+        $body = '';
+        if ($request->status == 'finished' || $request->status == 'canceled') {
+            $time = TutorTime::find($lession->tutor_time_id);
+            if ($time) {
+                $time->booked = false;
+                $time->save();
+            }
+            // If it is a groups lesson and student want it to canceled
+            if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument_id  == 21)){
+                $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
+                if($group){
+                    $user->updateBalance($group->fee, $group->user_id, 'Received');
+                    $group->delete();
                 }
-                // If it is a groups lesson and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument_id  == 21)){
-                    $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
-                    if($group){
-                        $user->updateBalance($group->fee, $group->user_id, 'Received');
-                        $group->delete();
-                    }
-                    $lession->status = $lastStatus;
-                    $lession->save();
-                }
-                // if request is canceled by tutor 
-                // return the balance to student
-                if($request->status == 'canceled' && $lession->tutor_id == $user->id){
-                    $lession->student()->updateBalance($lession->fee, $user->id, 'Received');
-                }
+                $lession->status = $lastStatus;
+                $lession->save();
+            }
+            // if request is canceled by tutor 
+            // return the balance to student
+            if($request->status == 'canceled' && $lession->tutor_id == $user->id){
+                $lession->student()->updateBalance($lession->fee, $user->id, 'Received');
+            }
 
-                // if lesson is finished by tutor
-                // pay the balance to tutor
+            // if lesson is finished by tutor
+            // pay the balance to tutor
 
-                if($request->status == 'finished'){
-                    if($lession->instrument  == null || $lession->instrument_id  == 21){
-                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
-                        foreach ($groups as $g) {
-                            $payFee = $g->fee * 0.8;
-                            $studentId = $g->user_id;
-                            $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
-                        }
-                    }else{
-                        $payFee = $lession->fee * 0.8;
-                        $studentId = $lession->student_id;
+            if($request->status == 'finished'){
+                if($lession->instrument  == null || $lession->instrument_id  == 21){
+                    $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                    foreach ($groups as $g) {
+                        $payFee = $g->fee * 0.8;
+                        $studentId = $g->user_id;
                         $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
                     }
+                }else{
+                    $payFee = $lession->fee * 0.8;
+                    $studentId = $lession->student_id;
+                    $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
                 }
             }
-            if ($request->status == 'approved' || $request->status == 'canceled' || $request->status == 'finished') {
-                // update the tutor avaialble time
-                if ($request->status == 'approved') {
-
-                    // update the tutor avaialble time
-                    $time = Carbon::parse($lession->start_at, 'UTC')->setTimezone($lession->tutor->time_zone);
-                    $time = TutorTime::find($lession->tutor_time_id);
-                    if ($time && !$time->is_group) {
-                        $time->booked = true;
-                        $time->save();
-                    }
-                    // if tutor accepted the request and its a group
-                    if($lession->group){
-                        $gr = GroupUser::where('user_id',$lession->student_id)
-                        ->where('lesson_id',$lession->id)->first();
-                        if($gr){    
-                            $gr->allowed = true;
-                            $gr->save();
-                        }
-                    }
-                }
-                $notification = new Notifications();
-                $notification->user_id = $lession->student_id;
-                $notification->title = 'Lesson ' . ucfirst($request->status);
-                $notification->body = $lession->instrument  == null ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
-                $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
-                $notification->save();
-                Fcm::sendNotification($notification);
-
-                if ($request->status != 'approved') {
-                    $notification = new Notifications();
-                    $notification->user_id = $lession->tutor_id;
-                    $notification->title = 'Lesson ' . ucfirst($request->status);
-                    $notification->body =  $lession->instrument == null ? "Group Lesson" : 'Student: ' . $lession->student->name;
-                    $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
-                    $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                    $notification->save();
-                    Fcm::sendNotification($notification);
-                }
-            } else {
-                $time = '';
-                if ($user->id == $lession->student_id) {
-                    $sendToId = $lession->tutor_id;
-                    $body =  $lession->instrument == null ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
-                    $time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                } else {
-                    $sendToId = $lession->student_id;
-                    $body =  $lession->instrument == null ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
-                    $time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                }
-                $notification = new Notifications();
-                $notification->user_id = $sendToId;
-                $notification->title = 'Lesson ' . ucfirst($request->status);
-                $notification->body = $body;
-                $notification->notification_time = $time;
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);;
-                $notification->save();
-                Fcm::sendNotification($notification);
-            }
-            $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument','group.user'])->find($id);
-            return response(['status' => true, 'data' => $lession]);
-        } catch (Exception $ex) {
-            return response()->json(['message' => $ex], 422);
         }
+        if ($request->status == 'approved' || $request->status == 'canceled' || $request->status == 'finished') {
+            // update the tutor avaialble time
+            if ($request->status == 'approved') {
+
+                // update the tutor avaialble time
+                $time = Carbon::parse($lession->start_at, 'UTC')->setTimezone($lession->tutor->time_zone);
+                $time = TutorTime::find($lession->tutor_time_id);
+                if ($time && !$time->is_group) {
+                    $time->booked = true;
+                    $time->save();
+                }
+                // if tutor accepted the request and its a group
+                if($lession->group){
+                    $gr = GroupUser::where('user_id',$lession->student_id)
+                    ->where('lesson_id',$lession->id)->first();
+                    if($gr){    
+                        $gr->allowed = true;
+                        $gr->save();
+                    }
+                }
+            }
+            $notification = new Notifications();
+            $notification->user_id = $lession->student_id;
+            $notification->title = 'Lesson ' . ucfirst($request->status);
+            $notification->body = $lession->instrument  == null ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+            $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
+            $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+            $notification->save();
+            Fcm::sendNotification($notification);
+
+            if ($request->status != 'approved') {
+                $notification = new Notifications();
+                $notification->user_id = $lession->tutor_id;
+                $notification->title = 'Lesson ' . ucfirst($request->status);
+                $notification->body =  $lession->instrument == null ? "Group Lesson" : 'Student: ' . $lession->student->name;
+                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);
+                $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
+                $notification->save();
+                Fcm::sendNotification($notification);
+            }
+        } else {
+            $time = '';
+            if ($user->id == $lession->student_id) {
+                $sendToId = $lession->tutor_id;
+                $body =  $lession->instrument == null ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
+                $time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
+            } else {
+                $sendToId = $lession->student_id;
+                $body =  $lession->instrument == null ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+                $time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
+            }
+            $notification = new Notifications();
+            $notification->user_id = $sendToId;
+            $notification->title = 'Lesson ' . ucfirst($request->status);
+            $notification->body = $body;
+            $notification->notification_time = $time;
+            $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);;
+            $notification->save();
+            Fcm::sendNotification($notification);
+        }
+        $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument','group.user'])->find($id);
+        return response(['status' => true, 'data' => $lession]);
     }
 
     public function destroy($id)
