@@ -12,12 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_payment_gateways', function (Blueprint $table) {
-            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('payment_gateway_id');
             $table->string('account')->nullable();
             $table->boolean('active')->default(true);
-            $table->timestamps();
         });
     }
 

@@ -13,7 +13,7 @@ class UserPaymentGatewayController extends Controller
      */
     public function index()
     {
-        $data = UserPaymentGateway::where('user_id', auth()->user()->id)->first();
+        $data = auth()->user()->paymentGateways;
         return response()->json($data, 200);
     }
 
@@ -54,13 +54,24 @@ class UserPaymentGatewayController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $data = UserPaymentGateway::updateOrCreate([
-            'user_id' => $request->user()->id,
-        ],[ 
-            'payment_gateway_id' => $request->payment_id,
-            'account' => $request->account ?? $request->user()->email,
+        $request->validate([
+            'payment_id' => 'required|exists:payment_gateways,id',
+            'account' => 'sometimes',
         ]);
-        return response()->json($data, 200);
+        $is = $request->user()->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_id)->first();
+        if(!$is){
+            $request->user()->paymentGateways()->attach($request->payment_id,[
+                'active' => true,
+                'account' => $request->account ?? $request->user()->email,
+            ]);
+        }
+        // $data = UserPaymentGateway::updateOrCreate([
+        //     'user_id' => $request->user()->id,
+        // ],[ 
+        //     'payment_gateway_id' => $request->payment_id,
+        //     'account' => $request->account ?? $request->user()->email,
+        // ]);
+        return $this->index();
     }
 
     /**

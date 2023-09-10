@@ -179,4 +179,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
 
+    public function paymentGateways(): BelongsToMany
+    {
+        return $this->belongsToMany(PaymentGateway::class, 'user_payment_gateways')
+        ->withPivot(['account', 'active']);
+    }
+
 }

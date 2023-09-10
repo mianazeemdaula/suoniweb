@@ -28,3 +28,24 @@ Route::get('/test/{id}', function($id){
     return \App\Models\PaymentGatwayLog::latest()->take(10)->get();
     return \App\Helpers\StripePayment::cardPayment('4242424242424242', 12, 2025, 123, 100);
 });
+
+
+Route::get('dataseeder', function() {
+    $gateways = [
+        'Bank account in GBP',
+        'Bank account in EUR',
+        'PayPal in GBP',
+        'PayPal in USD',
+        'Payoneer in EUR',
+    ];
+
+    foreach($gateways as $gateway) {
+        \App\Models\PaymentGateway::updateOrCreate([
+            'name' => $gateway
+        ],[
+            'name' => $gateway,
+            'active' => true,
+        ]);
+    }
+    return "Done";
+});
