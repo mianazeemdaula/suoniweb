@@ -10,6 +10,7 @@ use App\Models\LessionTiming;
 use App\Models\LessionLogs;
 use App\Models\LessionVideos;
 use App\Models\GroupUser;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Notifications;
@@ -194,7 +195,7 @@ class LessionController extends Controller
             if($request->status == 'canceled' && $lession->tutor_id != $user->id && ($lession->instrument  == null || $lession->instrument_id  == 21)){
                 $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                 if($group){
-                    $user->updateBalance($group->fee, $group->user_id, 'Received');
+                    User::find($user->id)->updateBalance($group->fee, $group->user_id, 'Received');
                     $group->delete();
                 }
                 $lession->status = $lastStatus;
@@ -203,7 +204,7 @@ class LessionController extends Controller
             // if request is canceled by tutor 
             // return the balance to student
             if($request->status == 'canceled' && $lession->tutor_id == $user->id){
-                $lession->student()->updateBalance($lession->fee, $user->id, 'Received');
+                User::find($lession->student_id)->updateBalance($lession->fee, $user->id, 'Received');
             }
 
             // if lesson is finished by tutor
@@ -215,12 +216,12 @@ class LessionController extends Controller
                     foreach ($groups as $g) {
                         $payFee = $g->fee * 0.8;
                         $studentId = $g->user_id;
-                        $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
+                        User::find($lession->tutor_id)->updateBalance($payFee, $studentId, 'Received');
                     }
                 }else{
                     $payFee = $lession->fee * 0.8;
                     $studentId = $lession->student_id;
-                    $lession->tutor()->updateBalance($payFee, $studentId, 'Received');
+                    User::find($lession->tutor_id)->updateBalance($payFee, $studentId, 'Received');
                 }
             }
         }
