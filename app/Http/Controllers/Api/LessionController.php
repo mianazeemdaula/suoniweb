@@ -412,7 +412,7 @@ class LessionController extends Controller
         foreach ($lessons as $lession) {
 
             // Delete all the request notifications for this lesson
-            Notification::whereJsonContains('data->id', $lession->id)
+            Notifications::whereJsonContains('data->id', $lession->id)
                 ->whereJsonContains('data->type','lession')
                 ->delete();
             $lession->status = $accept ? 'approved' : 'canceled';
