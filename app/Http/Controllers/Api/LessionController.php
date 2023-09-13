@@ -70,8 +70,9 @@ class LessionController extends Controller
                 'duration' => 'required|integer',
                 'times' => 'required',
                 'fee' => 'required',
+                'instrument_id' => 'required',
             ]);
-            $group = ($request->is_group || $request->instrument_id == 21);
+            $group = $request->instrument_id == 21;
             $totalAmount = 0;
             $notifications = [];
             $lessions = [];
@@ -102,7 +103,7 @@ class LessionController extends Controller
                     $totalAmount += $lession->fee;
                     $lessonIds[] = $lession->id;
                 }
-                if($group){
+                if($request->instrument_id == 21){
                     // find the last user if lesson already canceld and same user request it again
                     $gr =  GroupUser::where('lesson_id',$lession->id)->where('user_id',$request->user()->id)->first();
                     if(!$gr){
@@ -408,7 +409,7 @@ class LessionController extends Controller
         ->where('fee_paid', true)->get();
 
         $accept = $request->accept ?? false;
-        foreach ($variable as $lession) {
+        foreach ($lessons as $lession) {
 
             // Delete all the request notifications for this lesson
             Notification::whereJsonContains('data->id', $lession->id)
