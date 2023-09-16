@@ -92,6 +92,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::resource('withdrawl-request', 'Api\WithdrawRequestController');
 
         // User Payment Gateway
+        Route::get('active-gateways', 'Api\PaymentGatewayController@activePaymentGateways');
         Route::resource('payment-gateway', 'Api\PaymentGatewayController');
     });
     

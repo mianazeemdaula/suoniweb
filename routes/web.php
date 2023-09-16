@@ -32,19 +32,24 @@ Route::get('/test/{id}', function($id){
 
 Route::get('dataseeder', function() {
     $gateways = [
+        'Bank account in USD',
         'Bank account in GBP',
         'Bank account in EUR',
         'PayPal in GBP',
         'PayPal in USD',
+        'PayPal in EUR',
+        'Payoneer in GBP',
+        'Payoneer in USD',
         'Payoneer in EUR',
     ];
 
     foreach($gateways as $gateway) {
+        $nameParts =  explode(' ', $gateway);
         \App\Models\PaymentGateway::updateOrCreate([
             'name' => $gateway
         ],[
-            'name' => $gateway,
             'active' => true,
+            'currency' => $nameParts[count($nameParts) - 1]
         ]);
     }
     return "Done";

@@ -14,6 +14,7 @@ class PaymentGateway extends Model
     protected $fillable = [
         'name',
         'active',
+        'currency'
     ];
 
     public function users(): BelongsToMany
