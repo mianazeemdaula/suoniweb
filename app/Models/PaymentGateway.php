@@ -19,6 +19,6 @@ class PaymentGateway extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_payment_gateways')
-        ->withPivot(['account', 'active']);
+        ->withPivot(['account', 'active', 'holder_name']);
     }
 }

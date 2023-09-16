@@ -13,5 +13,7 @@ class UserPaymentGateway extends Model
         'payment_gateway_id',
         'user_id',
         'account',
+        'holder_name',
+        'active'
     ];
 }

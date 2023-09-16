@@ -442,7 +442,7 @@ class LessionController extends Controller
                     }
                 }
             }
-
+            
             // Send notification to student
             $notification = new Notifications();
             $notification->user_id = $lession->student_id;

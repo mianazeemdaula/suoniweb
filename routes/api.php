@@ -87,6 +87,12 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::resource('transactions', 'Api\TransactionController');
         Route::resource('due-transactions', 'Api\DueTransactionController');
         Route::resource('user-payment-gateway', 'Api\UserPaymentGatewayController');
+
+        // Withdrawl Request
+        Route::resource('withdrawl-request', 'Api\WithdrawRequestController');
+
+        // User Payment Gateway
+        Route::resource('payment-gateway', 'Api\PaymentGatewayController');
     });
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
