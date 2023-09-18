@@ -86,7 +86,7 @@ class PaymentGatewayController extends Controller
 
     function activePaymentGateways() {
         
-        $data = \App\Models\PaymentGateway::where('status', 1)->get();
+        $data = \App\Models\PaymentGateway::where('active', 1)->get();
         return response()->json($data);
     }
 }
