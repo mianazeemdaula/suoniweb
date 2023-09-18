@@ -17,6 +17,10 @@ class PaymentGateway extends Model
         'currency'
     ];
 
+    protected $casts = [
+        'active' => 'boolean'
+    ];
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_payment_gateways')
