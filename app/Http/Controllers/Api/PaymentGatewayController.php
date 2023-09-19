@@ -58,7 +58,7 @@ class PaymentGatewayController extends Controller
     public function show(string $id)
     {
         $user = auth()->user();
-        $gateway = $user->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+        $gateway = $user->paymentGateways()->wherePivot('payment_gateway_id', $id)->first();
         return response()->json($gateway);
     }
 
