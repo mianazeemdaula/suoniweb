@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\WithdrawRequest;
+use App\Models\DueTransaction;
 
 class WithdrawRequestController extends Controller
 {
@@ -39,9 +40,18 @@ class WithdrawRequestController extends Controller
         $withdrawRequest = new WithdrawRequest();
         $withdrawRequest->user_id = $auth->id;
         $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
-        $withdrawRequest->amount = $request->amount;
+        $withdrawRequest->amount = -($request->amount);
         $withdrawRequest->save();
-        $auth->updateBalance(-$request->amount, $auth->id, 'Withdraw request created');
+        $auth->balance -= $request->amount;
+        $auth->save();
+        DueTransaction::create([
+            'user_id' => $auth->id,
+            'user_from' => $auth->id,
+            'amount' => -($request->amount),
+            'description' => 'Withdraw request created',
+            'due_date' => now(),
+        ]);
+        // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
         return response()->json([
             'message' => 'Withdraw request created successfully',
             'data' => $withdrawRequest,
