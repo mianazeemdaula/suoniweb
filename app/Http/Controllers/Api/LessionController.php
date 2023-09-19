@@ -229,7 +229,7 @@ class LessionController extends Controller
             // update the tutor avaialble time
             if ($request->status == 'approved') {
                 // Delete all the request notifications for this lesson
-                Notification::whereJsonContains('data->id', $lession->id)
+                Notifications::whereJsonContains('data->id', $lession->id)
                 ->whereJsonContains('data->type','lession')
                 ->delete();
                 // update the tutor avaialble time
