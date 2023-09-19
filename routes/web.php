@@ -19,6 +19,9 @@ Route::get('/', function () {
 
 
 Route::get('/test/{id}', function($id){
+
+    return \App\Models\Notifications::whereJsonContains('data->type',"lession")
+    ->get();
     $user = \App\Models\User::find($id);
     // $user->updateBalance(10, 2, 'Earning from lesson');
     return \App\Models\Transaction::where('user_id', $id)
