@@ -49,7 +49,7 @@ class WithdrawRequestController extends Controller
             'user_from' => $auth->id,
             'amount' => -($request->amount),
             'description' => 'Withdraw request created',
-            'due_date' => now(),
+            'due_date' => now()->addDays(3),
         ]);
         // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
         return response()->json([
