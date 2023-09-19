@@ -12,7 +12,7 @@ class Fcm{
             return;
         }
         $token =  $notification->user->fcm_token;
-        return Fcm::send([$token],$notification->title, $notification->body,(array) json_decode($notification->data));
+        return Fcm::send([$token],$notification->title, $notification->body,$notification->data);
     }
 
     static public function send(Array $tokens, $title, $body, Array $data)
