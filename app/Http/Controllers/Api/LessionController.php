@@ -272,11 +272,11 @@ class LessionController extends Controller
             $time = '';
             if ($user->id == $lession->student_id) {
                 $sendToId = $lession->tutor_id;
-                $body =  $lession->instrument == 21 ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
+                $body =  $lession->instrument_id == 21 ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
                 $time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
             } else {
                 $sendToId = $lession->student_id;
-                $body =  $lession->instrument == 21 ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+                $body =  $lession->instrument_id == 21 ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
                 $time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
             }
             $notification = new Notifications();
