@@ -56,7 +56,7 @@ class PaymentHooksController extends Controller
               }
               if($metadata['type'] == 'topup') {
                 $userId = $metadata['user_id'];
-                $amount = $event->data['object']['amount_total'];
+                $amount = $event->data['object']['amount'];
                 User::find($userId)->updateBalance(($amount / 100), $userId, 'Topup');
               }
             default:
