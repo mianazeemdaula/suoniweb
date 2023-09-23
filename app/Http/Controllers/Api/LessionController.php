@@ -346,21 +346,17 @@ class LessionController extends Controller
 
     public function submitReview(Request $request)
     {
-        try {
-            $review = new Review();
-            $review->lession_id = $request->lession_id;
-            $review->rating = $request->rating;
-            $review->comment = $request->comment;
-            $review->video_rating = $request->video_rating;
-            $review->sound_rating = $request->sound_rating;
-            if ($request->user()->hasRole('tutor')) {
-                $review->rating_from = 'tutor';
-            }
-            $review->save();
-            return $this->update($request, $request->lession_id);
-        } catch (Exception $e) {
-            return response()->json(['status' => true, 'data' => $e->getMessage()]);
+        $review = new Review();
+        $review->lession_id = $request->lession_id;
+        $review->rating = $request->rating;
+        $review->comment = $request->comment;
+        $review->video_rating = $request->video_rating;
+        $review->sound_rating = $request->sound_rating;
+        if ($request->user()->hasRole('tutor')) {
+            $review->rating_from = 'tutor';
         }
+        $review->save();
+        return $this->update($request, $request->lession_id);
     }
 
     public function addLessionTime(Request $request)
