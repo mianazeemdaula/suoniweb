@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 use App\Models\PaymentGatwayLog;
+use App\Models\User;
 
 // Stripe
 use Stripe\Stripe;
@@ -52,6 +53,11 @@ class PaymentHooksController extends Controller
                     $group_lesson->fee_paid = true;
                     $group_lesson->save();
                 }
+              }
+              if($metadata['type'] == 'topup') {
+                $userId = $metadata['user_id'];
+                $amount = $event->data['object']['amount_total'];
+                User::find($userId)->updateBalance(($amount / 100), $userId, 'Topup');
               }
             default:
               echo 'Received unknown event type ' . $event->type;
