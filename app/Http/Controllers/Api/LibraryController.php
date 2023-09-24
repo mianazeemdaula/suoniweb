@@ -95,7 +95,7 @@ class LibraryController extends Controller
         //     $q->where('is_lession', 1);
         //     $q->orWhere('student_id', $user1);
         // })->where('id', $user1)->get();
-        $data = Library::whereIn('student_id', $ids)->get();
+        $data = Library::whereIn('student_id', $ids)->where('is_lession', 1)->get();
         return response()->json(['status' => true, 'data' => $data]);
     }
 }
