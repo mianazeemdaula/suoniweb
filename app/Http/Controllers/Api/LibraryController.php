@@ -91,10 +91,11 @@ class LibraryController extends Controller
             $ids[] = $a->tutor_id;
         }
         array_unique($ids);
-        $data = User::withAndWhereHas('libraries', function ($q) use ($user1) {
-            $q->where('is_lession', 1);
-            $q->orWhere('student_id', $user1);
-        })->where('id', $user1)->get();
+        // $data = User::withAndWhereHas('libraries', function ($q) use ($user1) {
+        //     $q->where('is_lession', 1);
+        //     $q->orWhere('student_id', $user1);
+        // })->where('id', $user1)->get();
+        $data = Library::whereIn('student_id', $ids)->get();
         return response()->json(['status' => true, 'data' => $data]);
     }
 }

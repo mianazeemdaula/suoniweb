@@ -230,6 +230,9 @@ class AuthController extends Controller
             if ($request->has('clock_24')) {
                 $user->clock_24 = $request->clock_24;
             }
+            if($request->has('currency')){
+                $user->currency = $request->currency;
+            }
             if ($request->has('time_zone')) {
                 $user->time_zone = $request->time_zone;
             }
