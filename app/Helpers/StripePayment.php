@@ -62,7 +62,7 @@ class StripePayment{
         try {
             Stripe::setApiKey(env('STRIPE_SECRET'));
             return PaymentIntent::create([
-                'amount' => $amount,
+                'amount' => $amount * 100,
                 'currency' => $currency,
                 'payment_method_types' => ['card'],
                 'description' => 'Payment for lessons',
