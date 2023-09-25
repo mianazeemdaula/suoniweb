@@ -87,7 +87,7 @@ class LessionRequestController extends Controller
                     $notification->title = 'Lesson Request';
                     $notification->body = 'Student: ' . $lession->student->name;
                     $notification->notification_time = Carbon::parse($lession->start_at, $tutor->time_zone)->setTimezone('UTC');
-                    $notification->data = json_encode(['id' => $lession->id, 'type' => 'lesson_request']);
+                    $notification->data = ['id' => $lession->id, 'type' => 'lesson_request'];
                     $notification->save();
                     $notifications[] = $notification->id;
                     Fcm::sendNotification($notification);
@@ -99,7 +99,7 @@ class LessionRequestController extends Controller
                 $notification->title = 'Teacher request';
                 $notification->body = 'Finding tutor';
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lesson_request']);
+                $notification->data = ['id' => $lession->id, 'type' => 'lesson_request'];
                 $notification->save();
                 $notifications[] = $notification->id;
                 DB::commit();
@@ -160,7 +160,7 @@ class LessionRequestController extends Controller
                 $notification->title = 'Lesson approved';
                 $notification->body = $body;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                $notification->data = json_encode(['id' => $lession->id, 'type' => 'lession']);;
+                $notification->data = ['id' => $lession->id, 'type' => 'lession'];
                 $notification->save();
                 // DB::commit();
                 Fcm::sendNotification($notification);
