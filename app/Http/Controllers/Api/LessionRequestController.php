@@ -183,11 +183,14 @@ class LessionRequestController extends Controller
 
     public function tutorApply(Request $request)
     {
+        $lession = LessonRequest::find($request->lessonId);
+        $tutorFee = $request->user()->instrument()->where('instrument_id', $lession->instrument_id)->first()->pivot->fee ?? 1;
         $details = new LessonRequestDetails();
         $details->lesson_request_id = $request->lessonId;
         $details->tutor_id = $request->user()->id;
         $details->response = $request->response;
         $details->tutor_time_id = $request->tutor_time_id;
+        $details->fee = $tutorFee;
         $details->save();
         return $this->show($request->lessonId);
     }
