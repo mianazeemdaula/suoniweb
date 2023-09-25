@@ -131,48 +131,40 @@ class LessionRequestController extends Controller
 
     public function update(Request $request, $id)
     {
-        try {
-            // DB::beginTransaction();
-            $user = $request->user();
-            $lrequest = LessonRequest::find($id);
-            $tutorTime = TutorTime::where('user_id', $request->tutor_id)->where('from_time', Carbon::parse($lrequest->start_at)->setTimezone('UTC'))->first();
-            if($tutorTime){
-                $tutorTime->booked = true;
-                $tutorTime->save();
-                // update request
-                $lrequest->status = 'approved';
-                $lrequest->save();
-                // create new lesson
-                $lession = new Lession();
-                $lession->instrument_id = $lrequest->instrument_id;
-                $lession->student_id = $lrequest->student_id;
-                $lession->tutor_id = $request->tutor_id;
-                $lession->lession_duration = $lrequest->lession_duration;
-                $lession->start_at = Carbon::parse($lrequest->start_at)->setTimezone('UTC');
-                $lession->end_at = Carbon::parse($lrequest->end_at)->setTimezone('UTC');
-                $lession->tutor_time_id = $tutorTime->id;
-                $lession->status = 'approved';
-                $lession->save();
-                // send notification
-                $body = 'Stduent: ' . $lession->student->name;
-                $notification = new Notifications();
-                $notification->user_id = $lession->tutor_id;
-                $notification->title = 'Lesson approved';
-                $notification->body = $body;
-                $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                $notification->data = ['id' => $lession->id, 'type' => 'lession'];
-                $notification->save();
-                // DB::commit();
-                Fcm::sendNotification($notification);
-                $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument'])->find($id);
-                return $this->show($id);
-            }else{
-                return response()->json(['status' => false], 204);
-            }
-            
-        }catch (\Throwable $th) {
-            DB::rollBack();
-            throw $th;
+        $user = $request->user();
+        $lrequest = LessonRequest::find($id);
+        $tutorTime = TutorTime::where('user_id', $request->tutor_id)->where('from_time', Carbon::parse($lrequest->start_at)->setTimezone('UTC'))->first();
+        if($tutorTime){
+            $tutorTime->booked = true;
+            $tutorTime->save();
+            // update request
+            $lrequest->status = 'approved';
+            $lrequest->save();
+            // create new lesson
+            $lession = new Lession();
+            $lession->instrument_id = $lrequest->instrument_id;
+            $lession->student_id = $lrequest->student_id;
+            $lession->tutor_id = $request->tutor_id;
+            $lession->lession_duration = $lrequest->lession_duration;
+            $lession->start_at = Carbon::parse($lrequest->start_at)->setTimezone('UTC');
+            $lession->end_at = Carbon::parse($lrequest->end_at)->setTimezone('UTC');
+            $lession->tutor_time_id = $tutorTime->id;
+            $lession->status = 'approved';
+            $lession->save();
+            // send notification
+            $body = 'Stduent: ' . $lession->student->name;
+            $notification = new Notifications();
+            $notification->user_id = $lession->tutor_id;
+            $notification->title = 'Lesson approved';
+            $notification->body = $body;
+            $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
+            $notification->data = ['id' => $lession->id, 'type' => 'lession'];
+            $notification->save();
+            Fcm::sendNotification($notification);
+            $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument'])->find($id);
+            return $this->show($id);
+        }else{
+            return response()->json(['status' => false], 204);
         }
     }
 
@@ -184,7 +176,7 @@ class LessionRequestController extends Controller
     public function tutorApply(Request $request)
     {
         $lession = LessonRequest::find($request->lessonId);
-        $tutorFee = $request->user()->instrument()->where('instrument_id', $lession->instrument_id)->first()->pivot->fee ?? 1;
+        $tutorFee = $request->user()->instruments()->where('instrument_id', $lession->instrument_id)->first()->pivot->fee ?? 1;
         $details = new LessonRequestDetails();
         $details->lesson_request_id = $request->lessonId;
         $details->tutor_id = $request->user()->id;
