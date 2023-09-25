@@ -103,6 +103,10 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
     // Api Namespace
     Route::post('stripe-pay', 'Api\PaymentHooksController@stripePayment');
     Route::any('waapihooks','Api\PaymentHooksController@wappiAppHooks');
+
+    // Currencies
+    Route::get('currencies','Api\CurrencyController@index');
+    Route::get('fetch-currencies','Api\CurrencyController@fetch');
 });
 
 Route::post("/getstripsecret", function (Request $request) {

@@ -69,3 +69,7 @@ Route::get('dataseeder', function() {
     }
     return "Done";
 });
+
+Route::get('currencies-seeder', function(){
+
+});
