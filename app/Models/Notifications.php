@@ -16,6 +16,11 @@ class Notifications extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function userfrom()
+    {
+        return $this->belongsTo(User::class,'user_from');
+    }
+
     // public function setNotificationTimeAttribute($value)
     // {
     //     return Carbon::parse($value, auth()->user()->time_zone)->setTimezone('UTC');

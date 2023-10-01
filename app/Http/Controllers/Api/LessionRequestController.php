@@ -84,6 +84,7 @@ class LessionRequestController extends Controller
                 foreach ($tutors as $tutor) {
                     $notification = new Notifications();
                     $notification->user_id = $tutor->id;
+                    $notification->user_from = $request->user()->id;
                     $notification->title = 'Lesson Request';
                     $notification->body = 'Student: ' . $lession->student->name;
                     $notification->notification_time = Carbon::parse($lession->start_at, $tutor->time_zone)->setTimezone('UTC');
@@ -96,6 +97,7 @@ class LessionRequestController extends Controller
                 // Notifications for Student
                 $notification = new Notifications();
                 $notification->user_id = Auth::id();
+                $notification->user_from = Auth::id();
                 $notification->title = 'Teacher request';
                 $notification->body = 'Finding tutor';
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
@@ -155,6 +157,7 @@ class LessionRequestController extends Controller
             $body = 'Stduent: ' . $lession->student->name;
             $notification = new Notifications();
             $notification->user_id = $lession->tutor_id;
+            $notification->user_from = $lession->student_id;
             $notification->title = 'Lesson approved';
             $notification->body = $body;
             $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
