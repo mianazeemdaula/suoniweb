@@ -147,7 +147,7 @@ class LessionController extends Controller
                 'group_lessons' => json_encode($groupIds),
                 'type' => 'lessons',
             ];
-            $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount) * 100,$paymentmetadata);
+            $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
             if($payment && !isset($payment['id'])){
                 DB::rollback();
                 return response()->json(['message' => $payment['message']], 422);
