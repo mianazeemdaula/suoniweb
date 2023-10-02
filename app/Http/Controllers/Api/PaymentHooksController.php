@@ -24,7 +24,7 @@ class PaymentHooksController extends Controller
                 'data' => $event->data['object']['metadata'],
                 'status' => $event->type,
             ]);
-            $log = PaymentGatwayLog::whereJsonContains('id', $event->id)
+            $log = PaymentGatwayLog::whereJsonContains('response->id', $event->id)
             ->where('status', $event->type)
             ->first();
             switch ($event->type) {
