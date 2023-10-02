@@ -56,7 +56,7 @@ class SearchController extends Controller
         }])->where('id', $id)->first();
         
         if($user){
-            $ids = $user->blockedUsers()->pluck('id');
+            $ids = $user->blockedUsers()->pluck('id')->toArray();
             $data['tutors'] = $data['tutors']->filter(function ($item) use ($ids) {
                 return !in_array($item->id, $ids);
             });;
