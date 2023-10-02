@@ -24,7 +24,9 @@ class PaymentHooksController extends Controller
                 'data' => $event->data['object']['metadata'],
                 'status' => $event->type,
             ]);
-
+            $log = PaymentGatwayLog::whereJsonContains('response->id', $event->id)
+            ->where('status', $event->type)
+            ->first();
             switch ($event->type) {
             case 'payment_intent.amount_capturable_updated':
               $paymentIntent = $event->data['object'];
@@ -54,7 +56,7 @@ class PaymentHooksController extends Controller
                     $group_lesson->save();
                 }
               }
-              if($metadata['type'] == 'topup') {
+              if($metadata['type'] == 'topup' && $log != null) {
                 $userId = $metadata['user_id'];
                 $amount = $event->data['object']['amount'];
                 User::find($userId)->updateBalance(($amount / 100), $userId, 'Topup');
