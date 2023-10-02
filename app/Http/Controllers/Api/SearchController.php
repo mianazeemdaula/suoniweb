@@ -57,9 +57,10 @@ class SearchController extends Controller
         
         if($user){
             $ids = $user->blockedUsers()->pluck('id')->toArray();
+            return response()->json($ids, 200);
             $data['tutors'] = $data['tutors']->filter(function ($item) use ($ids) {
                 return !in_array($item->id, $ids);
-            });;
+            });
         }
         return response()->json($data['tutors'] ?? [], 200);
     }
