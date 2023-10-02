@@ -44,7 +44,7 @@ class SearchController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function teachersByInstrument($id)  {
+    function teachersByInstrument($id)  {
         $user = auth()->user();
         $data = Instrument::with(['tutors' => function ($q) use($user) {
             $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
@@ -53,15 +53,11 @@ class SearchController extends Controller
             $q->withCount(['tutorLessions as active_students' => function ($a) {
                 $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
             }]);
+            if($user){
+                $ids = $user->blockedUsers()->pluck('id');
+                $q->whereNotIn('id',$ids);
+            }
         }])->where('id', $id)->first();
-        
-        if($user){
-            $ids = $user->blockedUsers()->pluck('id')->toArray();
-            return response()->json($ids, 200);
-            $data['tutors'] = $data['tutors']->filter(function ($item) use ($ids) {
-                return !in_array($item->id, $ids);
-            });
-        }
         return response()->json($data['tutors'] ?? [], 200);
     }
 }
