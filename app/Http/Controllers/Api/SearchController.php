@@ -22,8 +22,9 @@ class SearchController extends Controller
     public function searchByName(Request $request)
     {
         $text = $request->text;
+        $user = $request->user();
         $data = [];
-        $data['tutors'] =  User::with(['tutorRating', 'tutorToughtHours', 'tutorCountReviews', 'tutorVideos', 'tutorTimes' => function ($q) {
+        $query =  User::with(['tutorRating', 'tutorToughtHours', 'tutorCountReviews', 'tutorVideos', 'tutorTimes' => function ($q) {
             $q->where('from_time', '>=', Carbon::now());
             $q->where('booked', false);
         }, 'instruments', 'userable'])->withCount(['tutorLessions as active_students' => function ($a) {
@@ -31,20 +32,19 @@ class SearchController extends Controller
         }])->whereHasMorph('userable', Tutor::class, function ($a) {
             $a->where('in_search', false);
         })
-        ->inRandomOrder()->where('name', 'like', "%${text}%")->get();
+        ->inRandomOrder()->where('name', 'like', "%${text}%");
+        if($user){
+            $ids = $user->blockedUsers()->pluck('id');
+            $q->whereNotIn('id', $ids);
+        }
+
+        $data['tutors'] = $query->get();
 
         $data['intruments'] = Instrument::where('name', 'like', "%${text}%")->where('status', true)->get();
         return response()->json(['data' => $data]);
     }
 
     function teachersByInstrument($id)  {
-        // $data =  User::with(['tutorRating', 'tutorToughtHours', 'instruments' => function($i) use($id){
-        //     $i->where('id',$id);
-        // }, 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
-        //     $a->where('in_search', false);
-        // })->withCount(['tutorLessions as active_students' => function ($a) {
-        //     $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
-        // }])->whereHas('instruments')->inRandomOrder()->get();
 
         $data = Instrument::with(['tutors' => function ($q) {
             $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {

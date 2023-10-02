@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\Fcm;
 use App\Http\Controllers\Controller;
 use App\Models\Inbox;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -40,7 +41,12 @@ class InboxController extends Controller
 
     public function show($id)
     {
-        $user = Auth::user();
+        $user = auth()->user();
+        $blocked = $user->blockedUsers()->wherePivot('blocked_user_id', $id)->first();
+        $blockedBy = User::find($id)->blockedUsers()->wherePivot('blocked_user_id', $id)->first();
+        if($blocked || $blockedBy){
+            return response()->json(['message' => 'User blocked'], 422);
+        }
         $data =  Inbox::where([
             ['tutor_id', '=', $id],
             ['student_id', '=', $user->id],

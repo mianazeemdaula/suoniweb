@@ -185,4 +185,9 @@ class User extends Authenticatable implements MustVerifyEmail
         ->withPivot(['account', 'active', 'holder_name']);
     }
 
+    public function blockedUsers()
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'user_id', 'blocked_user_id');
+    }
+
 }

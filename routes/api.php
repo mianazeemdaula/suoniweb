@@ -39,6 +39,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::resource('user', 'Api\UserController');
         Route::get('workinghours', 'Api\UserController@teachingHours');
         Route::post('apploginlogs', 'Api\UserController@addAppLoginLogs');
+        Route::post('block-user', 'Api\UserController@blockUser');
         // Tutor Time
         Route::resource('tutorTime', 'Api\TutorTimeController');
         Route::post('tutor-time-wholeday', 'Api\TutorTimeController@forWholeDay');

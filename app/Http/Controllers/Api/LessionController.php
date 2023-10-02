@@ -231,9 +231,11 @@ class LessionController extends Controller
             // update the tutor avaialble time
             
             // Delete all the request notifications for this lesson
-            Notifications::whereJsonContains('data->id', $lession->id)
-            ->whereJsonContains('data->type','lession')
-            ->delete();
+            if($request->status == 'approved' || $request->status == 'canceled'){
+                Notifications::whereJsonContains('data->id', $lession->id)
+                ->whereJsonContains('data->type','lession')
+                ->delete();
+            }
             if ($request->status == 'approved') {
                 // update the tutor avaialble time
                 $time = Carbon::parse($lession->start_at, 'UTC')->setTimezone($lession->tutor->time_zone);

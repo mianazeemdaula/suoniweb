@@ -134,4 +134,10 @@ class UserController extends Controller
         $log->save();
         return response()->json(['status' => true]);
     }
+
+    public function blockUser(Request $request)  {
+        auth()->user()->blockedUsers()->attach($request->id);
+        $data = auth()->user()->blockedUsers()->pluck('id');
+        return response()->json($data, 200);
+    }
 }
