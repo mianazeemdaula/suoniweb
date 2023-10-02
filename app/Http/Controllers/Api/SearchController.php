@@ -53,11 +53,14 @@ class SearchController extends Controller
             $q->withCount(['tutorLessions as active_students' => function ($a) {
                 $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
             }]);
-            if($user){
-                $ids = $user->blockedUsers()->pluck('id');
-                $q->whereNotIn('id',$ids);
-            }
         }])->where('id', $id)->first();
+        
+        if($user){
+            $ids = $user->blockedUsers()->pluck('id');
+            $data['tutors'] = $data['tutors']->filter(function ($item) use ($ids) {
+                return !in_array($item->id, $ids);
+            });;
+        }
         return response()->json($data['tutors'] ?? [], 200);
     }
 }
