@@ -54,7 +54,7 @@ class PaymentHooksController extends Controller
                     $group_lesson->save();
                 }
               }
-              if($metadata['type'] == 'topup' && $log == null) {
+              if($metadata['type'] == 'topup') {
                 $userId = $metadata['user_id'];
                 $amount = $event->data['object']['amount'];
                 $user = User::find($userId);
