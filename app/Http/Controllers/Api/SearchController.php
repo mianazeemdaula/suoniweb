@@ -44,7 +44,7 @@ class SearchController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    function teachersByInstrument($id)  {
+    public function teachersByInstrument($id)  {
         $user = auth()->user();
         $data = Instrument::with(['tutors' => function ($q) use($user) {
             $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {

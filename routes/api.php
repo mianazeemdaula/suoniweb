@@ -95,6 +95,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         // User Payment Gateway
         Route::get('active-gateways', 'Api\PaymentGatewayController@activePaymentGateways');
         Route::resource('payment-gateway', 'Api\PaymentGatewayController');
+        Route::get('teachers-auth-instrument/{id}', 'Api\SearchController@teachersByInstrument');
     });
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
