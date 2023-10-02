@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\PaymentGatwayLog;
 use App\Models\User;
+use Carbon\Carbon;
 
 // Stripe
 use Stripe\Stripe;
@@ -24,9 +25,6 @@ class PaymentHooksController extends Controller
                 'data' => $event->data['object']['metadata'],
                 'status' => $event->type,
             ]);
-            $log = PaymentGatwayLog::whereJsonContains('response->id', $event->id)
-            ->where('status', $event->type)
-            ->first();
             switch ($event->type) {
             case 'payment_intent.amount_capturable_updated':
               $paymentIntent = $event->data['object'];
@@ -59,7 +57,21 @@ class PaymentHooksController extends Controller
               if($metadata['type'] == 'topup' && $log == null) {
                 $userId = $metadata['user_id'];
                 $amount = $event->data['object']['amount'];
-                User::find($userId)->updateBalance(($amount / 100), $userId, 'Topup');
+                $user = User::find($userId);
+                $amount = ($amount / 100);
+                $last = $user->transactions()->latest()->first();
+                $addNew = true;
+                if($last && $last->amount == $amount){
+                  $createdAt = Carbon::parse($last->created_at);
+                  $now = Carbon::now();
+                  $diffInMint = $now->diffInMinutes($createdAt);
+                  if($diffInMint < 1){
+                    $addNew = false;
+                  }
+                }
+                if($addNew){
+                  User::find($userId)->updateBalance($amount, $userId, 'Topup');
+                }
               }
             default:
               echo 'Received unknown event type ' . $event->type;
