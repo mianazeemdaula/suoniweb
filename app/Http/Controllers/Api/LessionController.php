@@ -144,15 +144,20 @@ class LessionController extends Controller
                 $notifications[] = $notification->id;
             }
             
-            $paymentmetadata = [
-                'lessons' => json_encode($lessonIds),
-                'group_lessons' => json_encode($groupIds),
-                'type' => 'lessons',
-            ];
-            $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
-            if($payment && !isset($payment['id'])){
-                DB::rollback();
-                return response()->json(['message' => $payment['message']], 422);
+            if($request->payment_type == 'card'){    
+                $paymentmetadata = [
+                    'lessons' => json_encode($lessonIds),
+                    'group_lessons' => json_encode($groupIds),
+                    'type' => 'lessons',
+                ];
+                $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
+                if($payment && !isset($payment['id'])){
+                    DB::rollback();
+                    return response()->json(['message' => $payment['message']], 422);
+                }
+            }else{
+                $user = $request->user();
+                $user->updateBalance(-($totalAmount), $request->tutor_id, 'Lesson(s) fee');
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->get();
