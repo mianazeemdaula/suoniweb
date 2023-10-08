@@ -145,7 +145,7 @@ class LessionController extends Controller
                 $notification->save();
                 $notifications[] = $notification->id;
             }
-            
+            $payment = null;
             if($request->payment_type == 'card'){    
                 $paymentmetadata = [
                     'lessons' => json_encode($lessonIds),
