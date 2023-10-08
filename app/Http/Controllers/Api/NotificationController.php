@@ -12,7 +12,8 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $data = Notifications::with(['user', 'userfrom'])->where('user_id', $user->id)->orderBy('id', 'desc')->get();
+        $data = Notifications::with(['user', 'userfrom'])->where('user_id', $user->id)
+        ->where('queued', false)->orderBy('id', 'desc')->get();
         return response()->json(['status' => true, 'data' => $data]);
     }
 

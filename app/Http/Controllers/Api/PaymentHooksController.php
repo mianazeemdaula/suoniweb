@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+use App\Helpers\Fcm;
 use App\Models\PaymentGatwayLog;
 use App\Models\User;
+use App\Models\Notifications;
 use Carbon\Carbon;
 
 // Stripe
@@ -43,15 +45,29 @@ class PaymentHooksController extends Controller
             case 'payment_intent.succeeded':
               $metadata = $event->data['object']['metadata'];
               if($metadata['type'] == 'lessons') {
-                foreach(json_decode($metadata['lessons']) as $lesson) {
-                    $lesson = \App\Models\Lession::find($lesson);
+                $lessonIds = [];
+                foreach(json_decode($metadata['lessons']) as $l) {
+                    $lesson = \App\Models\Lession::find($l);
                     $lesson->fee_paid = true;
                     $lesson->save();
+                    $lessonIds[] = $lesson->id;
                 }
-                foreach(json_decode($metadata['group_lessons']) as $group_lesson) {
-                    $group_lesson = \App\Models\GroupUser::find($group_lesson);
+                foreach(json_decode($metadata['group_lessons']) as $gl) {
+                    $group_lesson = \App\Models\GroupUser::find($gl);
                     $group_lesson->fee_paid = true;
                     $group_lesson->save();
+                    $lessonIds[] = $gl->lesson->id;
+                }
+
+                foreach ($lessonIds as $id) {
+                  $noti = Notifications::whereJsonContains('data->id', $id)
+                  ->whereJsonContains('data->type','lession')
+                  ->where('queued',true)->first();
+                  if($noti){
+                    Fcm::sendNotification($noti);
+                    $noti->queued = false;
+                    $noti->save();
+                  }
                 }
               }
               if($metadata['type'] == 'topup') {

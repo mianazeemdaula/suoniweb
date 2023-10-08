@@ -123,6 +123,7 @@ class LessionController extends Controller
                 }
                 $lessions[] = $lession;
                 $notification = new Notifications();
+                $notification->queued = $request->payment_type == 'card';    
                 $notification->user_id = $lession->tutor_id;    
                 $notification->user_from = $lession->student_id;    
                 $notification->title = 'Confirmation Request';
@@ -134,6 +135,7 @@ class LessionController extends Controller
 
                 // Notifications for Student
                 $notification = new Notifications();
+                $notification->queued = $request->payment_type == 'card';
                 $notification->user_id = $request->user()->id;
                 $notification->user_from = $lession->tutor_id;
                 $notification->title = 'Request for lesson sent';
@@ -160,7 +162,7 @@ class LessionController extends Controller
                 $user->updateBalance(-($totalAmount), $request->tutor_id, 'Lesson(s) fee');
             }
             DB::commit();
-            $notifications = Notifications::whereIn('id', $notifications)->get();
+            $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();
             foreach ($notifications as $value) {
                 Fcm::sendNotification($value);
             }
