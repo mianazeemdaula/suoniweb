@@ -78,6 +78,7 @@ class LessionController extends Controller
             $lessions = [];
             $lessonIds = [];
             $groupIds = [];
+            $gIds = [];
             foreach ($request->times as $key => $value) {
                 $startDate = Carbon::parse($value['start'], auth()->user()->time_zone)->setTimezone('UTC');
                 $endDate = Carbon::parse($value['end'], auth()->user()->time_zone)->setTimezone('UTC');
@@ -122,6 +123,7 @@ class LessionController extends Controller
                         $gr->allowed = false;
                         $gr->save();
                     }
+                    $gIds[] = $gr->id;
                 }
                 $lessions[] = $lession;
                 $notification = new Notifications();
@@ -168,7 +170,7 @@ class LessionController extends Controller
             foreach ($notifications as $value) {
                 Fcm::sendNotification($value);
             }
-            return response()->json(['status' => true, 'data' => $lessions[0], 'payment' => $payment], 200);
+            return response()->json(['status' => true, 'data' => $lessions[0], 'payment' => $payment, 'l_ids' => $lessonIds, 'g_ids' => $gIds], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -472,5 +474,13 @@ class LessionController extends Controller
         }
         $data = ['message' => 'All lessons accepted', 'count' => $lessons->count()];
         return response()->json($data, 200);
+    }
+
+
+    function removeUnpaidLessons(Reqeust $request) {
+
+        Lession::whereIn('id', $request->ids)->where('fee_paid', false)->where('status', 'pending')->delete(); 
+        GroupUser::whereIn('id', $request->gids)->where('fee_paid', false)->delete();
+        return response()->json(['message' => 'Lessons removed'], 200);
     }
 }
