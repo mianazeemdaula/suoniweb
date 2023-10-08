@@ -482,7 +482,7 @@ class LessionController extends Controller
     }
 
 
-    function removeUnpaidLessons(Reqeust $request) {
+    function removeUnpaidLessons(Request $request) {
 
         Lession::whereIn('id', $request->ids)->where('fee_paid', false)->where('status', 'pending')->delete(); 
         GroupUser::whereIn('id', $request->gids)->where('fee_paid', false)->delete();
