@@ -159,7 +159,7 @@ class LessionController extends Controller
                 $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
                 if($payment && !isset($payment['id'])){
                     DB::rollback();
-                    return response()->json(['message' => $payment['message']], 422);
+                    return response()->json(['message' => $totalAmount], 422);
                 }
             }else{
                 $user = $request->user();
