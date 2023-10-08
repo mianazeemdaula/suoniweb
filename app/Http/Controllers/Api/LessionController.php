@@ -104,6 +104,9 @@ class LessionController extends Controller
                     $lession->save();
                     $totalAmount += $lession->fee;
                     $lessonIds[] = $lession->id;
+                }else{
+                    $lessonIds[] = $lession->id;
+                    $totalAmount += $lession->fee;
                 }
                 if($request->instrument_id == 21){
                     // find the last user if lesson already canceld and same user request it again
@@ -118,8 +121,10 @@ class LessionController extends Controller
                         $user->fee_paid = $request->payment_type == 'wallet';
                         $user->save();
                         $totalAmount += $user->fee;
-                        $groupIds = $user->id;
+                        $groupIds[] = $user->id;
                     }else{
+                        $totalAmount += $user->fee;
+                        $groupIds[] = $user->id;
                         $gr->allowed = false;
                         $gr->save();
                     }
