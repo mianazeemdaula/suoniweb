@@ -98,6 +98,7 @@ class LessionController extends Controller
                     $lession->end_at = $endDate;
                     // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
                     $lession->fee = $request->fee;
+                    $lession->fee_paid = $request->payment_type == 'wallet';
                     $lession->tutor_time_id = $value['id'];
                     $lession->save();
                     $totalAmount += $lession->fee;
@@ -113,6 +114,7 @@ class LessionController extends Controller
                         $user->allowed = false;
                         // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
                         $user->fee = $request->fee;
+                        $user->fee_paid = $request->payment_type == 'wallet';
                         $user->save();
                         $totalAmount += $user->fee;
                         $groupIds = $user->id;
