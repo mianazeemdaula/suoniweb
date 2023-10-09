@@ -84,9 +84,7 @@ class LessionController extends Controller
                 $endDate = Carbon::parse($value['end'], auth()->user()->time_zone)->setTimezone('UTC');
                 $times[] = $value;
                 $lession = $newLesson = Lession::where('tutor_id',$request->tutor_id)
-                ->where('status','!=','canceled')
-                ->where('status','!=','finished')
-                ->where('status','!=','reviewed')
+                ->whereNotIn('status', ['canceled','finished','reviewed'])
                 ->where('tutor_time_id',$value['id'])
                 ->orderBy('id','desc')->first();
                 if(!$lession){

@@ -28,41 +28,38 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         //
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'password' => 'required|min:6',
             'email' => 'required|email|unique:users,email',
             'name' => 'required|string|min:4|max:150',
         ]);
-        if ($validator->fails()) {
-            return response()->json(['required' => $validator->errors()->first()], 200);
-        } else {
-            $user = new User;
-            $user->email = $request->email;
-            $user->password = bcrypt($request->password);
-            $user->name = $request->name;
-            $user->time_zone = $request->time_zone;
+        $user = new User;
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
+        $user->name = $request->name;
+        $user->time_zone = $request->time_zone;
+        $user->save();
+        if ($request->tutor == true) {
+            $user->assignRole('tutor');
+            $tutor = new Tutor();
+            $tutor->bio = '';
+            $tutor->in_search = false;
+            $tutor->save();
+            $tutor->user()->save($user);
+            $user->status = 'incomplete';
             $user->save();
-            if ($request->tutor == true) {
-                $user->assignRole('tutor');
-                $tutor = new Tutor();
-                $tutor->bio = '';
-                $tutor->in_search = false;
-                $tutor->save();
-                $tutor->user()->save($user);
-                $user->status = 'incomplete';
-                $user->save();
-                $token = $user->createToken('Auth Token')->plainTextToken;
-                $user = $user->getTutor($user->id);
-                return response()->json(['token' => $token, 'user' => $user], 200);
-            } else {
-                $user->assignRole('student');
-                $student = new Student();
-                $student->save();
-                $student->user()->save($user);
-                $token = $user->createToken('Auth Token')->plainTextToken;
-                return response()->json(['token' => $token, 'user' => $user], 200);
-            }
+            $token = $user->createToken('Auth Token')->plainTextToken;
+            $user = $user->getTutor($user->id);
+            return response()->json(['token' => $token, 'user' => $user], 200);
+        } else {
+            $user->assignRole('student');
+            $student = new Student();
+            $student->save();
+            $student->user()->save($user);
+            $token = $user->createToken('Auth Token')->plainTextToken;
+            return response()->json(['token' => $token, 'user' => $user], 200);
         }
+        
     }
 
     public function registerApple(Request $request)
@@ -130,7 +127,6 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
         if ($user !=null && $user->trashed()) {
             $user->restore();
-            // return response()->json(['message' => 'Email not found'], 204);
         }
         if ($user) {
             if (Auth::attempt($credentials)) {
