@@ -64,7 +64,7 @@ class LessionController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-        // try {
+        try {
             $request->validate([
                 'tutor_id' => 'required|integer',
                 'duration' => 'required|integer',
@@ -166,7 +166,7 @@ class LessionController extends Controller
                 }
             }else{
                 $user = $request->user();
-                $user->updateBalance(-($totalAmount), $request->tutor_id, 'Lesson(s) fee');
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Lesson(s) fee');
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();
@@ -174,10 +174,10 @@ class LessionController extends Controller
                 Fcm::sendNotification($value);
             }
             return response()->json(['status' => true, 'data' => $lessions[0], 'payment' => $payment, 'l_ids' => $lessonIds, 'g_ids' => $gIds], 200);
-        // } catch (\Throwable $th) {
-        //     DB::rollBack();
-        //     throw $th;
-        // }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            throw $th;
+        }
     }
     public function show($id)
     {
