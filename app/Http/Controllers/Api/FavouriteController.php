@@ -40,14 +40,14 @@ class FavouriteController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        $count = $user->favouriteTutors()->wherePivot('tutor_id', $request->tutor)->count();
+        $count = $user->favouriteTutors()->wherePivot('tutor_id', $request->tutor)->first();
 
-        if ($count > 0)
+        if ($count){
             $user->favouriteTutors()->detach($request->tutor);
-        else
+        }else{
             $user->favouriteTutors()->attach($request->tutor);
-
-        return $user->favouriteTutors->pluck('id');
+        }
+        return $user->favouriteTutors()->pluck('id');
     }
 
     /**
