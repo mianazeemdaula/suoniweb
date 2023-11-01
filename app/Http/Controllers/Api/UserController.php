@@ -138,10 +138,17 @@ class UserController extends Controller
     public function blockUser(Request $request)  {
         $user = auth()->user();
         $isBlocked = $user->blockedUsers()->wherePivot('blocked_user_id', $request->id)->first();
-        if(!$isBlocked){
+        if($isBlocked){
+            $user->blockedUsers()->detach($request->id);
+        }else{
             $user->blockedUsers()->attach($request->id);
         }
         $data = auth()->user()->blockedUsers()->pluck('id');
+        return response()->json($data, 200);
+    }
+
+    public function blockedusers()  {
+        $data = auth()->user()->blockedUsers;
         return response()->json($data, 200);
     }
 }
