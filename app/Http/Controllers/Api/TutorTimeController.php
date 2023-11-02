@@ -132,14 +132,11 @@ class TutorTimeController extends Controller
 
     public function forWholeDay(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'start' => 'required',
             'end' => 'required',
             'isChecked'=> 'required',
         ]);
-        if ($validator->fails()) {
-            return response()->json(['required' => $validator->errors()->first()], 200);
-        }
         $user = $request->user();
         $isGroup = $request->is_group ?? 0;
         $start = Carbon::parse($request->start, auth()->user()->time_zone)->setTimezone('UTC');

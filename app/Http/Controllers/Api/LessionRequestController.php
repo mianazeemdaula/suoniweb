@@ -152,6 +152,8 @@ class LessionRequestController extends Controller
             $lession->end_at = Carbon::parse($lrequest->end_at)->setTimezone('UTC');
             $lession->tutor_time_id = $tutorTime->id;
             $lession->status = 'approved';
+            $lession->fee_paid = true;
+            $lession->fee = $request->fee;
             $lession->save();
             // send notification
             $body = 'Stduent: ' . $lession->student->name;
