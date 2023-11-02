@@ -155,6 +155,12 @@ class LessionRequestController extends Controller
             $lession->fee_paid = true;
             $lession->fee = $request->fee;
             $lession->save();
+            
+            if($request->has('payment_method')){
+                if($request->payment_method == 'wallet'){
+                    $user->updateBalance(-$request->fee, $lession->tutor_id, 'Lesson fee');
+                }
+            }
             // send notification
             $body = 'Stduent: ' . $lession->student->name;
             $notification = new Notifications();
