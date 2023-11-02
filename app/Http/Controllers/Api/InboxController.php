@@ -62,6 +62,7 @@ class InboxController extends Controller
             $inbox = new Inbox();
             $inbox->student_id = $user->id;
             $inbox->tutor_id = $id;
+            $inbox->send_by = $user->id;
             $inbox->save();
             $inbox = Inbox::with(['student', 'tutor'])->where('id', $inbox->id)->first();
             return response()->json(['status' => true, 'data' => $inbox]);
