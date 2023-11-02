@@ -83,7 +83,9 @@ class PaymentGatewayController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = auth()->user();
+        $user->paymentGateways()->detach($id);
+        return $this->index();
     }
 
     function activePaymentGateways() {
