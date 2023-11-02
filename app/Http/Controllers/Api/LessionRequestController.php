@@ -156,8 +156,8 @@ class LessionRequestController extends Controller
             $lession->fee = $request->fee;
             $lession->save();
             
-            if($request->has('payment_method')){
-                if($request->payment_method == 'wallet'){
+            if($request->has('fee_method')){
+                if($request->fee_method == 'wallet'){
                     $user->updateBalance(-$request->fee, $lession->tutor_id, 'Lesson fee');
                 }
             }
