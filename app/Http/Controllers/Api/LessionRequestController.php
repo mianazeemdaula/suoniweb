@@ -172,7 +172,6 @@ class LessionRequestController extends Controller
             $notification->data = ['id' => $lession->id, 'type' => 'lession'];
             $notification->save();
             Fcm::sendNotification($notification);
-            $lession = Lession::with(['notes', 'libraries', 'videos', 'tutor', 'times', 'student', 'instrument'])->find($id);
             return $this->show($id);
         }else{
             return response()->json(['status' => false], 204);
