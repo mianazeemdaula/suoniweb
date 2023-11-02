@@ -91,4 +91,12 @@ class InboxController extends Controller
         }
         return $this->index();
     }
+
+    public function markRead(Request $request)
+    {
+        $inbox = Inbox::find($request->id);
+        $inbox->is_read = true;
+        $inbox->save();
+        return response()->json(['status' => true, 'data' => $inbox]);
+    }
 }

@@ -81,6 +81,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
 
         // Inbox
         Route::resource('inbox', 'Api\InboxController');
+        Route::post('inbox-markread', 'Api\InboxController@markRead');
 
         // Notifications
         Route::resource('notificaiton', 'Api\NotificationController');
