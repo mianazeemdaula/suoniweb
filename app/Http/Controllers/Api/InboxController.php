@@ -43,7 +43,11 @@ class InboxController extends Controller
     {
         $user = auth()->user();
         $blocked = $user->blockedUsers()->wherePivot('blocked_user_id', $id)->first();
-        $blockedBy = User::find($id)->blockedUsers()->wherePivot('blocked_user_id', $id)->first();
+        $blockedBy = null;
+        $byUser = User::find($id);
+        if($byUser){
+            $blockedBy = $byUser->blockedUsers()->wherePivot('blocked_user_id', $user->id)->first();
+        }
         if($blocked || $blockedBy){
             return response()->json(['message' => 'User blocked'], 422);
         }
