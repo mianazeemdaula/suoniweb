@@ -100,7 +100,7 @@ class InboxController extends Controller
     public function markRead(Request $request)
     {
         $inbox = Inbox::find($request->id);
-        if($inbox->send_by == $request->user()->id){    
+        if($inbox->send_by != $request->user()->id){    
             $inbox->is_read = true;
             $inbox->save();
             return response()->json(['status' => true, 'data' => $inbox]);
