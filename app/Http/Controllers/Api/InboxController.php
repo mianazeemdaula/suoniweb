@@ -100,8 +100,11 @@ class InboxController extends Controller
     public function markRead(Request $request)
     {
         $inbox = Inbox::find($request->id);
-        $inbox->is_read = true;
-        $inbox->save();
-        return response()->json(['status' => true, 'data' => $inbox]);
+        if($inbox->send_by == $request->user()->id){    
+            $inbox->is_read = true;
+            $inbox->save();
+            return response()->json(['status' => true, 'data' => $inbox]);
+        }
+        return response()->json(['status' => false, 'message' => 'You can not mark read this message']);
     }
 }
