@@ -71,6 +71,7 @@ class LessionController extends Controller
                 'times' => 'required',
                 'fee' => 'required',
                 'instrument_id' => 'required',
+                'payment_type' => 'required',
             ]);
             $group = $request->instrument_id == 21;
             $totalAmount = 0;
@@ -97,7 +98,8 @@ class LessionController extends Controller
                     $lession->end_at = $endDate;
                     // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
                     $lession->fee = $request->fee;
-                    $lession->fee_paid = $request->payment_type == 'wallet';
+                    // $lession->fee_paid = $request->payment_type == 'wallet';
+                    $lession->fee_paid = true;
                     $lession->tutor_time_id = $value['id'];
                     $lession->save();
                     $totalAmount += $lession->fee;
@@ -116,7 +118,8 @@ class LessionController extends Controller
                         $user->allowed = false;
                         // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
                         $user->fee = $request->fee;
-                        $user->fee_paid = $request->payment_type == 'wallet';
+                        // $user->fee_paid = $request->payment_type == 'wallet';
+                        $user->fee_paid =true;
                         $user->save();
                         $totalAmount += $user->fee;
                         $groupIds[] = $user->id;
@@ -130,7 +133,7 @@ class LessionController extends Controller
                 }
                 $lessions[] = $lession;
                 $notification = new Notifications();
-                $notification->queued = $request->payment_type == 'card';    
+                // $notification->queued = $request->payment_type == 'card';    
                 $notification->user_id = $lession->tutor_id;    
                 $notification->user_from = $lession->student_id;    
                 $notification->title = 'Confirmation Request';
@@ -142,7 +145,7 @@ class LessionController extends Controller
 
                 // Notifications for Student
                 $notification = new Notifications();
-                $notification->queued = $request->payment_type == 'card';
+                // $notification->queued = $request->payment_type == 'card';
                 $notification->user_id = $request->user()->id;
                 $notification->user_from = $lession->tutor_id;
                 $notification->title = 'Request for lesson sent';
@@ -154,16 +157,16 @@ class LessionController extends Controller
             }
             $payment = null;
             if($request->payment_type == 'card'){    
-                $paymentmetadata = [
-                    'lessons' => json_encode($lessonIds),
-                    'group_lessons' => json_encode($groupIds),
-                    'type' => 'lessons',
-                ];
-                $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
-                if($payment && !isset($payment['id'])){
-                    DB::rollback();
-                    return response()->json(['message' => $totalAmount], 422);
-                }
+                // $paymentmetadata = [
+                //     'lessons' => json_encode($lessonIds),
+                //     'group_lessons' => json_encode($groupIds),
+                //     'type' => 'lessons',
+                // ];
+                // $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
+                // if($payment && !isset($payment['id'])){
+                //     DB::rollback();
+                //     return response()->json(['message' => $totalAmount], 422);
+                // }
             }else{
                 $user = $request->user();
                 $user->updateBalance(-$totalAmount, $request->tutor_id, 'Lesson(s) fee');
