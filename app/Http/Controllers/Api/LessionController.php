@@ -73,6 +73,13 @@ class LessionController extends Controller
                 'instrument_id' => 'required',
                 'payment_type' => 'required',
             ]);
+            $totalPayable = $request->fee * count($request->times);
+            if($request->payment_type == 'wallet'){
+                $user = $request->user();
+                if($user->balance < $totalPayable){
+                    return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
+                }
+            }
             $group = $request->instrument_id == 21;
             $totalAmount = 0;
             $notifications = [];
@@ -96,29 +103,28 @@ class LessionController extends Controller
                     $lession->lession_duration = $value['duration'];
                     $lession->start_at = $startDate;
                     $lession->end_at = $endDate;
-                    // $lession->fee = $request->user()->instruments()->wherePivot('instrument_id',$request->instrument_id)->first()->pivot->fee;
                     $lession->fee = $request->fee;
-                    // $lession->fee_paid = $request->payment_type == 'wallet';
                     $lession->fee_paid = true;
                     $lession->tutor_time_id = $value['id'];
+                    $lession->status = 'approved';
                     $lession->save();
                     $totalAmount += $lession->fee;
                     $lessonIds[] = $lession->id;
                 }else{
+                    $lession->status = 'approved';
+                    $lession->save();
                     $lessonIds[] = $lession->id;
                     $totalAmount += $lession->fee;
                 }
-                if($request->instrument_id == 21){
+                if($group){
                     // find the last user if lesson already canceld and same user request it again
                     $gr =  GroupUser::where('lesson_id',$lession->id)->where('user_id',$request->user()->id)->first();
                     if(!$gr){
                         $user = new GroupUser;
                         $user->user_id = $request->user()->id;
                         $user->lesson_id = $lession->id;
-                        $user->allowed = false;
-                        // $user->fee = $request->user()->instruments()->wherePivot('instrument_id',21)->first()->pivot->fee ?? 1;
+                        $user->allowed = true;
                         $user->fee = $request->fee;
-                        // $user->fee_paid = $request->payment_type == 'wallet';
                         $user->fee_paid =true;
                         $user->save();
                         $totalAmount += $user->fee;
@@ -132,51 +138,44 @@ class LessionController extends Controller
                     $gIds[] = $gr->id;
                 }
                 $lessions[] = $lession;
-                $notification = new Notifications();
-                // $notification->queued = $request->payment_type == 'card';    
+                $notification = new Notifications(); 
                 $notification->user_id = $lession->tutor_id;    
                 $notification->user_from = $lession->student_id;    
-                $notification->title = 'Confirmation Request';
+                $notification->title = 'Lesson approved';
                 $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
-                $notification->data = ['id' => $lession->id, 'type' => 'lession', 'status' => 'pending'];
+                $notification->data = ['id' => $lession->id, 'type' => 'lession', 'status' => 'approved'];
                 $notification->save();
                 $notifications[] = $notification->id;
 
                 // Notifications for Student
                 $notification = new Notifications();
-                // $notification->queued = $request->payment_type == 'card';
                 $notification->user_id = $request->user()->id;
                 $notification->user_from = $lession->tutor_id;
-                $notification->title = 'Request for lesson sent';
+                $notification->title = 'Lesson approved';
                 $notification->body = $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
-                $notification->data = ['id' => $lession->id, 'type' => 'lession', 'status' => 'pending'];
+                $notification->data = ['id' => $lession->id, 'type' => 'lession', 'status' => 'approved'];
                 $notification->save();
                 $notifications[] = $notification->id;
+
+                // Book the time slot for tutor if its not a group lesson
+                $time = TutorTime::find($lession->tutor_time_id);
+                if ($time && !$time->is_group) {
+                    $time->booked = true;
+                    $time->save();
+                }
             }
-            $payment = null;
-            if($request->payment_type == 'card'){    
-                // $paymentmetadata = [
-                //     'lessons' => json_encode($lessonIds),
-                //     'group_lessons' => json_encode($groupIds),
-                //     'type' => 'lessons',
-                // ];
-                // $payment = \App\Helpers\StripePayment::PaymentIntent(intval($totalAmount),$paymentmetadata);
-                // if($payment && !isset($payment['id'])){
-                //     DB::rollback();
-                //     return response()->json(['message' => $totalAmount], 422);
-                // }
-            }else{
+            if($request->payment_type == 'wallet'){
                 $user = $request->user();
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Lesson(s) fee');
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid');
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();
             foreach ($notifications as $value) {
                 Fcm::sendNotification($value);
             }
-            return response()->json(['status' => true, 'data' => $lessions[0], 'payment' => $payment, 'l_ids' => $lessonIds, 'g_ids' => $gIds], 200);
+            return response()->json(['status' => true, 'data' => $lessions[0]], 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -215,7 +214,7 @@ class LessionController extends Controller
             if($request->status == 'canceled' && $lession->tutor_id != $user->id && $lession->instrument_id  == 21){
                 $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                 if($group){
-                    $user->updateBalance($group->fee, $group->user_id, 'Received');
+                    $user->updateBalance($group->fee, $group->user_id, 'Refunded');
                     $group->delete();
                 }
                 $lession->status = $lastStatus;
@@ -224,7 +223,7 @@ class LessionController extends Controller
             // if request is canceled by tutor 
             // return the balance to student
             if($request->status == 'canceled' && $lession->tutor_id == $user->id){
-                $lession->student->updateBalance($lession->fee, $user->id, 'Received');
+                $lession->student->updateBalance($lession->fee, $user->id, 'Refunded');
             }
 
             // if lesson is finished by tutor
@@ -235,7 +234,7 @@ class LessionController extends Controller
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee * 0.8;
-                        $lession->tutor->updateBalance($payFee, $$g->user_id, 'Received');
+                        $lession->tutor->updateBalance($payFee, $g->user_id, 'Received');
                     }
                 }else{
                     $payFee = $lession->fee * 0.8;
