@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use App\Helpers\Fcm;
 use App\Models\PaymentGatwayLog;
 use App\Models\User;
+use App\Models\Currency;
 use App\Models\Notifications;
 use Carbon\Carbon;
 
@@ -73,6 +74,13 @@ class PaymentHooksController extends Controller
               if($metadata['type'] == 'topup') {
                 $userId = $metadata['user_id'];
                 $amount = $event->data['object']['amount'];
+                $currency = strtoupper($event->data['object']['currency'] ?? 'usd');
+                if($currency!= 'USD'){
+                  $rate = Currency::whereName($currency)->first();
+                  if($rate){
+                    $amount = $amount * $rate->rate;
+                  }
+                }
                 $user = User::find($userId);
                 $amount = ($amount / 100);
                 $last = $user->transactions()->latest()->first();
