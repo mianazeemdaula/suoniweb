@@ -234,12 +234,12 @@ class LessionController extends Controller
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee * 0.8;
-                        $lession->tutor->updateBalance($payFee, $g->user_id, 'Received');
+                        $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid');
                     }
                 }else{
                     $payFee = $lession->fee * 0.8;
                     $studentId = $lession->student_id;
-                    $lession->tutor->updateBalance($payFee, $studentId, 'Received');
+                    $lession->tutor->updateBalance($payFee, $studentId, 'Paid');
                 }
             }
         }
