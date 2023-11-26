@@ -288,7 +288,6 @@ class AuthController extends Controller
             $user->languages()->detach();
             $user->tutorVideos()->delete();
             $user->appLoginLogs()->delete();
-            $user->tutorLessions()->delete();
             $user->favouriteTutors()->detach();
             $user->libraries()->delete();
             $user->instrumentHistory()->detach();
