@@ -285,22 +285,21 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            
+            Review::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
+            Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
+            $user->userable()->delete();
+            $user->instruments()->detach();
+            $user->languages()->detach();
+            $user->tutorVideos()->delete();
+            $user->appLoginLogs()->delete();
+            $user->favouriteTutors()->detach();
+            $user->libraries()->delete();
+            $user->instrumentHistory()->detach();
+            $user->tutorTimes()->delete();
+            $user->transactions()->delete();
+            $user->paymentGateways()->delete();
+            $user->blockedUsers()->delete();
             $user->forceDelete();
-            // Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
-            // Review::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
-            // $user->userable()->delete();
-            // $user->instruments()->detach();
-            // $user->languages()->detach();
-            // $user->tutorVideos()->delete();
-            // $user->appLoginLogs()->delete();
-            // $user->favouriteTutors()->detach();
-            // $user->libraries()->delete();
-            // $user->instrumentHistory()->detach();
-            // $user->tutorTimes()->delete();
-            // $user->transactions()->delete();
-            // $user->paymentGateways()->delete();
-            // $user->blockedUsers()->delete();
             return response()->json(['status' => true, 'message' => 'account deleted successfully'], 200);
         } catch (Exception $ex) {
             return response()->json(['status' => false, 'message' => $ex], 500);
