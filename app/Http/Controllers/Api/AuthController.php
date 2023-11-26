@@ -198,6 +198,9 @@ class AuthController extends Controller
 
     public function updateAvatar(Request $request)
     {
+        $request->valiate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
         $user = Auth::user();
         if ($request->has('image')) {
             $name = 'images/' . Str::random(40) . '.' . $request->image->getClientOriginalExtension();
