@@ -282,7 +282,21 @@ class AuthController extends Controller
     public function delete(Request $request)
     {
         try {
-            $request->user()->delete();
+            $user = $request->user();
+            $user->userable()->delete();
+            $user->instruments()->detach();
+            $user->languages()->detach();
+            $user->tutorVideos()->delete();
+            $user->appLoginLogs()->delete();
+            $user->tutorLessions()->delete();
+            $user->favouriteTutors()->detach();
+            $user->libraries()->delete();
+            $user->instrumentHistory()->detach();
+            $user->tutorTimes()->delete();
+            $user->transactions()->delete();
+            $user->paymentGateways()->delete();
+            $user->blockedUsers()->delete();
+            $user->forceDelete();
             return response()->json(['status' => true, 'message' => 'account deleted successfully'], 200);
         } catch (Exception $ex) {
             return response()->json(['status' => false, 'message' => $ex], 500);
