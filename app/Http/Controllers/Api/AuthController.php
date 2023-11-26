@@ -283,28 +283,25 @@ class AuthController extends Controller
 
     public function delete(Request $request)
     {
-        try {
-            $user = $request->user();
-            $lessons = Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->get();
-            Review::whereIn('lession_id', $lessons->pluck('id'))->delete();
-            $lessons->delete();
-            $user->userable()->delete();
-            $user->instruments()->detach();
-            $user->languages()->detach();
-            $user->tutorVideos()->delete();
-            $user->appLoginLogs()->delete();
-            $user->favouriteTutors()->detach();
-            $user->libraries()->delete();
-            $user->instrumentHistory()->detach();
-            $user->tutorTimes()->delete();
-            $user->transactions()->delete();
-            $user->paymentGateways()->delete();
-            $user->blockedUsers()->delete();
-            $user->forceDelete();
-            return response()->json(['status' => true, 'message' => 'account deleted successfully'], 200);
-        } catch (Exception $ex) {
-            return response()->json(['status' => false, 'message' => $ex], 500);
-        }
+        $user = $request->user();
+        $lessons = Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->get();
+        Review::whereIn('lession_id', $lessons->pluck('id'))->delete();
+        $lessons->delete();
+        $user->userable()->delete();
+        $user->instruments()->detach();
+        $user->languages()->detach();
+        $user->tutorVideos()->delete();
+        $user->appLoginLogs()->delete();
+        $user->favouriteTutors()->detach();
+        $user->libraries()->delete();
+        $user->instrumentHistory()->detach();
+        $user->tutorTimes()->delete();
+        $user->transactions()->delete();
+        $user->paymentGateways()->delete();
+        $user->blockedUsers()->delete();
+        $user->forceDelete();
+        return response()->json(['status' => true, 'message' => 'account deleted successfully'], 200);
+        
     }
 
     public function sendResetPasswordPin(Request $request)
