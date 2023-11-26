@@ -19,6 +19,7 @@ use App\Models\Tutor;
 use App\Models\Student;
 use App\Models\TutorVideos;
 use App\Models\Lession;
+use App\Models\Review;
 use App\Models\PasswordReset;
 
 use Illuminate\Support\Facades\Mail;
@@ -285,6 +286,7 @@ class AuthController extends Controller
         try {
             $user = $request->user();
             Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
+            Review::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
             $user->userable()->delete();
             $user->instruments()->detach();
             $user->languages()->detach();
