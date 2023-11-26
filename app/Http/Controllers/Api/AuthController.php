@@ -128,9 +128,6 @@ class AuthController extends Controller
         ];
 
         $user = User::where('email', $request->email)->first();
-        if ($user !=null && $user->trashed()) {
-            $user->restore();
-        }
         if ($user) {
             if (Auth::attempt($credentials)) {
                 $token = $user->createToken('Auth Token')->plainTextToken;
@@ -138,9 +135,9 @@ class AuthController extends Controller
                     $user = $user->getTutor($user->id);
                 return response()->json(['token' => $token, 'user' => $user], 200);
             }
-            return response()->json(['messasge' => 'Wrong credientals'], 401);
+            return response()->json(['messasge' => 'Password not matched'], 422);
         } else {
-            return response()->json(['message' => 'Email not found'], 204);
+            return response()->json(['message' => 'Email not found'], 422);
         }
     }
 
