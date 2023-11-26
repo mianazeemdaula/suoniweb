@@ -285,7 +285,7 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            Review::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
+            Review::Where('student_id', $user->id)->delete();
             Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
             $user->userable()->delete();
             $user->instruments()->detach();
