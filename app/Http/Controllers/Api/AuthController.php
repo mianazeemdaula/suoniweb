@@ -283,18 +283,18 @@ class AuthController extends Controller
     {
         try {
             $user = $request->user();
-            $user->userable()->delete();
-            $user->instruments()->detach();
-            $user->languages()->detach();
-            $user->tutorVideos()->delete();
-            $user->appLoginLogs()->delete();
-            $user->favouriteTutors()->detach();
-            $user->libraries()->delete();
-            $user->instrumentHistory()->detach();
-            $user->tutorTimes()->delete();
-            $user->transactions()->delete();
-            $user->paymentGateways()->delete();
-            $user->blockedUsers()->delete();
+            // $user->userable()->delete();
+            // $user->instruments()->detach();
+            // $user->languages()->detach();
+            // $user->tutorVideos()->delete();
+            // $user->appLoginLogs()->delete();
+            // $user->favouriteTutors()->detach();
+            // $user->libraries()->delete();
+            // $user->instrumentHistory()->detach();
+            // $user->tutorTimes()->delete();
+            // $user->transactions()->delete();
+            // $user->paymentGateways()->delete();
+            // $user->blockedUsers()->delete();
             $user->forceDelete();
             return response()->json(['status' => true, 'message' => 'account deleted successfully'], 200);
         } catch (Exception $ex) {
