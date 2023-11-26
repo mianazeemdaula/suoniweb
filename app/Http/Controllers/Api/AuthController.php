@@ -23,6 +23,8 @@ use App\Models\Review;
 use App\Models\PasswordReset;
 use App\Models\Notifications;
 
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -204,7 +206,7 @@ class AuthController extends Controller
         $user = Auth::user();
         if ($request->has('image')) {
             $name = 'images/' . Str::random(40) . '.' . $request->image->getClientOriginalExtension();
-            Image::make($request->image)->resize(250, 250, function ($constraint) {
+            \Image::make($request->image)->resize(250, 250, function ($constraint) {
                 $constraint->aspectRatio();
             })->save($name);
             $user->image = $name;
