@@ -47,7 +47,9 @@ class SearchController extends Controller
     function teachersByInstrument($id)  {
         $user = auth()->user();
         $data = Instrument::with(['tutors' => function ($q) use($user) {
-            $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes', 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
+            $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes' => function($t){
+                $t->where('booked', false);
+            }, 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
                 $a->where('in_search', false);
             })->inRandomOrder();
             $q->withCount(['tutorLessions as active_students' => function ($a) {
