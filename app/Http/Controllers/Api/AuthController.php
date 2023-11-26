@@ -21,6 +21,7 @@ use App\Models\TutorVideos;
 use App\Models\Lession;
 use App\Models\Review;
 use App\Models\PasswordReset;
+use App\Models\Notifications;
 
 use Illuminate\Support\Facades\Mail;
 
@@ -287,6 +288,7 @@ class AuthController extends Controller
         $lessons = Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->get();
         Review::whereIn('lession_id', $lessons->pluck('id'))->delete();
         Lession::where('tutor_id', $user->id)->orWhere('student_id', $user->id)->delete();
+        Notifications::where('user_id', $user->id)->delete();
         $user->userable()->delete();
         $user->instruments()->detach();
         $user->languages()->detach();
