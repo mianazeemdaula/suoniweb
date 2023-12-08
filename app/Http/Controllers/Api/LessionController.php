@@ -140,7 +140,7 @@ class LessionController extends Controller
                 $lessions[] = $lession;
                 $notification = new Notifications(); 
                 $notification->user_id = $lession->tutor_id;    
-                $notification->user_from = $lession->student_id;    
+                $notification->user_from = $request->user()->id;    
                 $notification->title = 'Lesson approved';
                 $notification->body = $group ? "Group Lesson" :  'Student: ' . $request->user()->name;
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');

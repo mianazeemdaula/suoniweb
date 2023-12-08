@@ -66,7 +66,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getTutor($id)
     {
-        return $this->where('id', $id)->with(['instruments', 'languages', 'tutorVideos', 'tutorRating', 'tutorCountReviews', 'tutorToughtHours', 'tutorTimes'])->first();
+        return $this->where('id', $id)->with(['instruments', 'languages', 'tutorVideos', 'tutorRating', 'tutorCountReviews', 'tutorToughtHours', 'tutorTimes', 'activeStudents'])->first();
     }
 
 
@@ -119,7 +119,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function activeStudents()
     {
-        return $this->tutorLessions()->select(DB::raw('count(distinct `student_id`) as aggregate'));
+        return $this->tutorLessions()->distinct()->count('student_id');
     }
 
     public function tutorRating()
