@@ -70,7 +70,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ->withCount(['tutorLessions as student_count' => function($query) {
             $query->select(DB::raw('count(distinct `student_id`)'));
         }])->withCount(['tutorLessions as lesson_count' => function($query) {
-            $query->count('id');
+            $query->count('lessions.id');
         }])->first();
     }
 
