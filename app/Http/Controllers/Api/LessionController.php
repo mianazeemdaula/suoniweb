@@ -135,7 +135,6 @@ class LessionController extends Controller
                         $gr->allowed = false;
                         $gr->save();
                     }
-                    $gIds[] = $gr->id;
                 }
                 $lessions[] = $lession;
                 $notification = new Notifications(); 
