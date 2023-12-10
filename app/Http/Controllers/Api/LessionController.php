@@ -204,6 +204,8 @@ class LessionController extends Controller
         $user = $request->user();
         $sendToId = 1;
         $body = '';
+        $group = $lession->instrument_id == 21;
+        $groupUser = null;
         if ($request->status == 'finished' || $request->status == 'canceled') {
             $time = TutorTime::find($lession->tutor_time_id);
             if ($time) {
@@ -265,16 +267,17 @@ class LessionController extends Controller
                     $gr = GroupUser::where('user_id',$lession->student_id)
                     ->where('lesson_id',$lession->id)->first();
                     if($gr){    
+                        $groupUser = $gr;
                         $gr->allowed = true;
                         $gr->save();
                     }
                 }
             }
             $notification = new Notifications();
-            $notification->user_id = $lession->student_id;
+            $notification->user_id = $group ? $groupUser->user_id ?? $lession->student_id  : $lession->student_id;
             $notification->user_from = $lession->tutor_id;
             $notification->title = 'Lesson ' . ucfirst($request->status);
-            $notification->body = $lession->instrument  == null ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+            $notification->body = $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
             $notification->notification_time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
             $notification->data = ['id' => $lession->id, 'type' => 'lession'];
             $notification->save();
@@ -283,9 +286,9 @@ class LessionController extends Controller
             if ($request->status != 'approved') {
                 $notification = new Notifications();
                 $notification->user_id = $lession->tutor_id;
-                $notification->user_from = $lession->student_id;
+                $notification->user_from = $group ? ($groupUser->user_id ?? $lession->student_id)  :  $lession->student_id;
                 $notification->title = 'Lesson ' . ucfirst($request->status);
-                $notification->body =  $lession->instrument == null ? "Group Lesson" : 'Student: ' . $lession->student->name;
+                $notification->body =  $group ? "Group Lesson" : 'Student: ' . $lession->student->name;
                 $notification->data = ['id' => $lession->id, 'type' => 'lession'];
                 $notification->notification_time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
                 $notification->save();
@@ -297,12 +300,12 @@ class LessionController extends Controller
             if ($user->id == $lession->student_id) {
                 $sendToId = $lession->tutor_id;
                 $sendfromId = $lession->student_id;
-                $body =  $lession->instrument_id == 21 ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
+                $body =  $group ? "Group Lesson" : 'Stduent: ' . $lession->student->name;
                 $time = Carbon::parse($lession->start_at, $lession->tutor->time_zone)->setTimezone('UTC');
             } else {
                 $sendToId = $lession->student_id;
                 $sendfromId = $lession->tutor_id;
-                $body =  $lession->instrument_id == 21 ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
+                $body =  $group ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
                 $time = Carbon::parse($lession->start_at, $lession->student->time_zone)->setTimezone('UTC');
             }
             $notification = new Notifications();
@@ -452,6 +455,7 @@ class LessionController extends Controller
                 }
             }
             // if tutor accepted the request and its a group
+            $gr = null;
             if($lession->instrument_id  == 21){
                 $gr = GroupUser::where('user_id',$lession->student_id)
                 ->where('lesson_id',$lession->id)->first();
@@ -468,7 +472,7 @@ class LessionController extends Controller
             
             // Send notification to student
             $notification = new Notifications();
-            $notification->user_id = $lession->student_id;
+            $notification->user_id = $lession->instrument_id  == 21 ? $gr->user_id :  $lession->student_id;
             $notification->user_from = $lession->tutor_id;
             $notification->title = 'Lesson ' . ucfirst($lession->status);
             $notification->body = $lession->instrument_id == 21 ? "Group Lesson" : 'Tutor: ' . $lession->tutor->name;
