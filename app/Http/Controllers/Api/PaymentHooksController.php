@@ -19,7 +19,8 @@ use Stripe\PaymentIntent;
 
 class PaymentHooksController extends Controller
 {
-    function stripePayment(Request $event) {
+    public  function stripePayment(Request $event) {
+      Log::debug($event->headers->all());
         if($event->id) {
             // Log::debug($event->data);
             PaymentGatwayLog::create([
