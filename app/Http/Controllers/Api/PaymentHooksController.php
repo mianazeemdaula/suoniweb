@@ -24,6 +24,7 @@ class PaymentHooksController extends Controller
       Log::debug($request->headers->all());
       Log::debug($request->all());
       $payload = file_get_contents('php://input');
+      Stripe::setApiKey(env('STRIPE_SECRET'));
       $event = Event::constructFrom(
           json_decode($payload, true)
       );
