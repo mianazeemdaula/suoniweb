@@ -99,6 +99,11 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::get('active-gateways', 'Api\PaymentGatewayController@activePaymentGateways');
         Route::resource('payment-gateway', 'Api\PaymentGatewayController');
         Route::get('teachers-auth-instrument/{id}', 'Api\SearchController@teachersByInstrument');
+
+        // User create Stripe Connect Account
+        // Route::post('create-stripe-connect-account', function($request) {
+        //     return \App\Helpers\StripePayment::createStripeConnectAccount();
+        // });
     });
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
@@ -119,3 +124,11 @@ Route::post("/getstripsecret", function (Request $request) {
 });
 
 
+// User create Stripe Connect Account
+Route::post('create-stripe-connect-account', function(Request $request) {
+    return \App\Helpers\StripePayment::createStripeConnectAccount($request);
+});
+
+Route::get('stripe-connect-account-return/{account}/{user}', function($account, $user) {
+    return [$account, $user];
+});

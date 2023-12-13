@@ -7,6 +7,8 @@ use Stripe\Stripe;
 use Stripe\Token;
 use Stripe\Charge;
 use Stripe\PaymentIntent;
+use Stripe\Account;
+use Stripe\AccountLink;
 use Stripe\Exception\CardException;
 use Illuminate\Http\Request;
 
@@ -74,17 +76,22 @@ class StripePayment{
         }
     }
 
-    // $payment = StripePayment::cardPayment(PaymentCard::find($request->card), intval($request->total_amount) * 100);
-    //             if($payment && isset($payment['id'])){
-    //                 $pay = new OrderPayment();
-    //                 $pay->order_id = $order->id;
-    //                 $pay->gateway = 'stripe';
-    //                 $pay->payment_id = isset($payment['id']) ? $payment['id'] : "";
-    //                 $pay->status = isset($payment['id']) ? 'paid' : 'declined';
-    //                 $pay->data = json_encode($payment);
-    //                 $pay->save();
-    //             }else{
-    //                 DB::rollback();
-    //                 return response()->json(['message' => $payment['message']], 422);
-    //             }
+    static public function createStripeConnectAccount(Request $request)  {
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            $account = Account::create([
+                'type' => 'express',
+            ]);
+            // create account links
+            $accountLink = AccountLink::create([
+                'account' => $account->id,
+                'refresh_url' => url("/api/stripe-connect-account-return/$account->id/1125"),
+                'return_url' => url("/api/stripe-connect-account-return/$account->id/1125"),
+                'type' => 'account_onboarding',
+            ]);
+            return response()->json($accountLink);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage()], 422);
+        }
+    }
 }

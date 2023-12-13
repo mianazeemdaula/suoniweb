@@ -16,11 +16,18 @@ use Carbon\Carbon;
 // Stripe
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Event;
 
 class PaymentHooksController extends Controller
 {
-    public  function stripePayment(Request $event) {
-      Log::debug($event->headers->all());
+    public  function stripePayment(Request $request) {
+      Log::debug($request->headers->all());
+      Log::debug($request->all());
+      $payload = file_get_contents('php://input');
+      $event = Event::constructFrom(
+          json_decode($payload, true)
+      );
+      Log::debug($event);
         if($event->id) {
             // Log::debug($event->data);
             PaymentGatwayLog::create([
@@ -110,5 +117,15 @@ class PaymentHooksController extends Controller
 
     function wappiAppHooks(Request $request) {
       Log::debug($request->all()); 
+    }
+
+    public function createStripeConnectAccount()  {
+      $stripe = new \Stripe\StripeClient(
+        env('STRIPE_SECRET')
+      );
+      $account = $stripe->accounts->create([
+        'type' => 'express',
+      ]);
+      return response()->json($account);
     }
 }
