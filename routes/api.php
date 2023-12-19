@@ -135,6 +135,7 @@ Route::get('stripe-connect-account-return/{account}/{user}', function($account, 
     $user->paymentGateways()->attach(1,[
         'active' => true,
         'account' => $account,
+        'holder_name' => $user->name,
     ]);
     return [$account, $user];
 });
