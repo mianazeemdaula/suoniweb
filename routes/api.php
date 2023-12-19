@@ -137,5 +137,5 @@ Route::get('stripe-connect-account-return/{account}/{user}', function($account, 
         'account' => $account,
         'holder_name' => $user->name,
     ]);
-    return [$account, $user];
+    return view('app.stripe_connect');
 });
