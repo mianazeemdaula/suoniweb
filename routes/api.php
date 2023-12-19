@@ -132,7 +132,7 @@ Route::post("/getstripsecret", function (Request $request) {
 
 Route::get('stripe-connect-account-return/{account}/{user}', function($account, $user) {
     $user = \App\Models\User::find($user);
-    $user->paymentGateways()->attach($request->payment_id,[
+    $user->paymentGateways()->attach(1,[
         'active' => true,
         'account' => $account,
     ]);
