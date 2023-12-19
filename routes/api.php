@@ -41,6 +41,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         Route::post('apploginlogs', 'Api\UserController@addAppLoginLogs');
         Route::post('block-user', 'Api\UserController@blockUser');
         Route::get('blocked-users', 'Api\UserController@blockedusers');
+        
         // Tutor Time
         Route::resource('tutorTime', 'Api\TutorTimeController');
         Route::post('tutor-time-wholeday', 'Api\TutorTimeController@forWholeDay');
@@ -104,6 +105,11 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
         // Route::post('create-stripe-connect-account', function($request) {
         //     return \App\Helpers\StripePayment::createStripeConnectAccount();
         // });
+        
+        // User create Stripe Connect Account
+        Route::post('create-stripe-connect-account', function(Request $request) {
+            return \App\Helpers\StripePayment::createStripeConnectAccount($request);
+        });
     });
     
     Route::post('search-by-name', 'Api\SearchController@searchByName');
@@ -123,11 +129,6 @@ Route::post("/getstripsecret", function (Request $request) {
     return \App\Helpers\StripePayment::getPaymentIntentClientSecret($request);
 });
 
-
-// User create Stripe Connect Account
-Route::post('create-stripe-connect-account', function(Request $request) {
-    return \App\Helpers\StripePayment::createStripeConnectAccount($request);
-});
 
 Route::get('stripe-connect-account-return/{account}/{user}', function($account, $user) {
     return [$account, $user];
