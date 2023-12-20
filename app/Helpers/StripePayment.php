@@ -109,4 +109,20 @@ class StripePayment{
             return response()->json(['message' => $th->getMessage()], 422);
         }
     }
+
+    static public function topupAccount() {
+        try {
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            $topup = \Stripe\Topup::create([
+                'amount' => 10000,
+                'currency' => 'usd',
+                'description' => 'Topup for account',
+                'statement_descriptor' => 'Topup',
+                'source' => 'src_18eYalAHEMiOZZp1l9ZTjSU0',
+            ]);
+            return response()->json($topup);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage()], 422);
+        }
+    }
 }

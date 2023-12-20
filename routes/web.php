@@ -19,7 +19,7 @@ Route::get('/', function () {
 
 
 Route::get('/test/{id}', function($id){
-
+    return \App\Helpers\StripePayment::topupAccount();
     return \App\Models\Notifications::whereJsonContains('data->type',"lession")
     ->get();
     $user = \App\Models\User::find($id);
