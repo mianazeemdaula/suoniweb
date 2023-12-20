@@ -46,7 +46,7 @@ class WithdrawRequestController extends Controller
         $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
         $withdrawRequest->amount = -($request->amount);
         $withdrawRequest->save();
-        // $auth->balance -= $request->amount;
+        $auth->balance -= $request->amount;
         $auth->save();
         $due =  DueTransaction::create([
             'user_id' => $auth->id,
