@@ -46,7 +46,7 @@ class WithdrawRequestController extends Controller
         $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
         $withdrawRequest->amount = -($request->amount);
         $withdrawRequest->save();
-        $auth->balance -= $request->amount;
+        // $auth->balance -= $request->amount;
         $auth->save();
         $due =  DueTransaction::create([
             'user_id' => $auth->id,
@@ -56,12 +56,16 @@ class WithdrawRequestController extends Controller
             'due_date' => now()->addDays(3),
         ]);
         if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
-            Stripe::setApiKey(env('STRIPE_SECRET'));
-            $transfer = Transfer::create([
-                'amount' => $request->amount / 100,
-                'currency' => 'usd',
-                'destination' => $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first()->account,
-            ]);
+            $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+            if($account){
+                $destination = $account->pivot->account;
+                Stripe::setApiKey(env('STRIPE_SECRET'));
+                $transfer = Transfer::create([
+                    'amount' => $request->amount / 100,
+                    'currency' => 'usd',
+                    'destination' => $destination,
+                ]);
+            }
             Log::info($transfer);
         }
         // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
