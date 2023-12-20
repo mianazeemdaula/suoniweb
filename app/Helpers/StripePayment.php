@@ -86,7 +86,7 @@ class StripePayment{
             $user->paymentGateways()->syncWithoutDetaching($request->id,[
                 'active' => false,
                 'account' => $account->id,
-                'holder_name' => $user->name,
+                'holder_name' => $user->name ?? $user->email,
             ]);
             // create account links
             $accountLink = AccountLink::create([
