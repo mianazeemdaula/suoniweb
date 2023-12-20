@@ -83,6 +83,11 @@ class StripePayment{
                 'type' => 'express',
             ]);
             $user = $request->user();
+            $user->paymentGateways()->syncWithoutDetaching($request->id,[
+                'active' => false,
+                'account' => $account->id,
+                'holder_name' => $user->name,
+            ]);
             // create account links
             $accountLink = AccountLink::create([
                 'account' => $account->id,
