@@ -83,11 +83,17 @@ class StripePayment{
                 'type' => 'express',
             ]);
             $user = $request->user();
-            if(!$user->paymentGateways()->wherePivot('payment_gateway_id', $request->id)->first()){
+            $gateway = $user->paymentGateways()->wherePivot('payment_gateway_id', $request->id)->first();
+            if(!$gateway){
                 $user->paymentGateways()->attach($request->id,[
                     'active' => false,
                     'account' => $account->id,
                     'holder_name' => $user->name ?? $user->email,
+                ]);
+            }else{
+                $user->paymentGateways()->updateExistingPivot($request->id,[
+                    'active' => false,
+                    'account' => $account->id,
                 ]);
             }
             // create account links
