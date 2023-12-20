@@ -9,6 +9,8 @@ use App\Models\WithdrawRequest;
 use App\Models\DueTransaction;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Currency;
 
 use Stripe\Stripe;
 use Stripe\Transfer;
@@ -44,28 +46,36 @@ class WithdrawRequestController extends Controller
                 'amount' => 'required|numeric|min:1|max:' . $auth->balance,
                 'payment_gateway_id' => 'required|exists:payment_gateways,id',
             ]);
+            $amount = $request->amount;
+            $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+            if($account->currency != 'USD'){
+                $rate = Currency::whereName($currency)->first();
+                if($rate){
+                    $amount = $amount * $rate->rate;
+                }
+            }
             $withdrawRequest = new WithdrawRequest();
             $withdrawRequest->user_id = $auth->id;
             $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
-            $withdrawRequest->amount = -($request->amount);
+            $withdrawRequest->amount = -($amount);
             $withdrawRequest->save();
-            $auth->balance -= $request->amount;
+            $auth->balance -= $amount;
             $auth->save();
             $due =  DueTransaction::create([
                 'user_id' => $auth->id,
                 'user_from' => $auth->id,
-                'amount' => -($request->amount),
+                'amount' => -($amount),
                 'description' => 'Withdraw request created',
                 'due_date' => now()->addDays(3),
             ]);
             if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
-                $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+                
                 if($account){
                     $destination = $account->pivot->account;
                     Stripe::setApiKey(env('STRIPE_SECRET'));
                     $transfer = Transfer::create([
-                        'amount' => $request->amount * 100,
-                        'currency' => 'usd',
+                        'amount' => $amount * 100,
+                        'currency' => $account->currency,
                         'destination' => $destination,
                     ]);
                     $due->update(['description' => 'Withdraw request created, transfer id: ' . $transfer->id]);
