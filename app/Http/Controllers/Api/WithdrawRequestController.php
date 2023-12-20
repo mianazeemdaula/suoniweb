@@ -68,6 +68,7 @@ class WithdrawRequestController extends Controller
                         'currency' => 'usd',
                         'destination' => $destination,
                     ]);
+                    $due->update(['description' => 'Withdraw request created, transfer id: ' . $transfer->id]);
                 }
             }
             DB::commit();
