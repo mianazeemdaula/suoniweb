@@ -115,7 +115,7 @@ class StripePayment{
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $topup = \Stripe\Topup::create([
                 'amount' => 10000,
-                'currency' => 'usd',
+                'currency' => 'GBP',
                 'description' => 'Topup for account',
                 'statement_descriptor' => 'Topup',
                 'source' => 'src_18eYalAHEMiOZZp1l9ZTjSU0',
