@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\WithdrawRequest;
 use App\Models\DueTransaction;
-
+use Illuminate\Support\Facades\Log;
 
 use Stripe\Stripe;
 use Stripe\Transfer;
@@ -57,11 +57,12 @@ class WithdrawRequestController extends Controller
         ]);
         if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
             Stripe::setApiKey(env('STRIPE_SECRET'));
-            Transfer::create([
+            $transfer = Transfer::create([
                 'amount' => $request->amount / 100,
                 'currency' => 'usd',
                 'destination' => $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first()->account,
             ]);
+            Log::info($transfer);
         }
         // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
         return response()->json([
