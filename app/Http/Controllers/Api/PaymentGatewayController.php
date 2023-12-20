@@ -15,7 +15,7 @@ class PaymentGatewayController extends Controller
     public function index()
     {
         $data = auth()->user()->paymentGateways()
-        ->where('active',true)->get();
+        ->wherePivot('active',true)->get();
         return response()->json($data);
     }
 
