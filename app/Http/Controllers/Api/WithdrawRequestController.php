@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\WithdrawRequest;
 use App\Models\DueTransaction;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 use Stripe\Stripe;
 use Stripe\Transfer;
@@ -36,43 +37,50 @@ class WithdrawRequestController extends Controller
      */
     public function store(Request $request)
     {
-        $auth = auth()->user();
-        $request->validate([
-            'amount' => 'required|numeric|min:1|max:' . $auth->balance,
-            'payment_gateway_id' => 'required|exists:payment_gateways,id',
-        ]);
-        $withdrawRequest = new WithdrawRequest();
-        $withdrawRequest->user_id = $auth->id;
-        $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
-        $withdrawRequest->amount = -($request->amount);
-        $withdrawRequest->save();
-        $auth->balance -= $request->amount;
-        $auth->save();
-        $due =  DueTransaction::create([
-            'user_id' => $auth->id,
-            'user_from' => $auth->id,
-            'amount' => -($request->amount),
-            'description' => 'Withdraw request created',
-            'due_date' => now()->addDays(3),
-        ]);
-        if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
-            $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
-            if($account){
-                $destination = $account->pivot->account;
-                Stripe::setApiKey(env('STRIPE_SECRET'));
-                $transfer = Transfer::create([
-                    'amount' => $request->amount * 100,
-                    'currency' => 'usd',
-                    'destination' => $destination,
-                ]);
+        try {
+            DB::beginTransaction();
+            $auth = auth()->user();
+            $request->validate([
+                'amount' => 'required|numeric|min:1|max:' . $auth->balance,
+                'payment_gateway_id' => 'required|exists:payment_gateways,id',
+            ]);
+            $withdrawRequest = new WithdrawRequest();
+            $withdrawRequest->user_id = $auth->id;
+            $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
+            $withdrawRequest->amount = -($request->amount);
+            $withdrawRequest->save();
+            $auth->balance -= $request->amount;
+            $auth->save();
+            $due =  DueTransaction::create([
+                'user_id' => $auth->id,
+                'user_from' => $auth->id,
+                'amount' => -($request->amount),
+                'description' => 'Withdraw request created',
+                'due_date' => now()->addDays(3),
+            ]);
+            if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
+                $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+                if($account){
+                    $destination = $account->pivot->account;
+                    Stripe::setApiKey(env('STRIPE_SECRET'));
+                    $transfer = Transfer::create([
+                        'amount' => $request->amount * 100,
+                        'currency' => 'usd',
+                        'destination' => $destination,
+                    ]);
+                }
             }
-            Log::info($transfer);
+            DB::commit();
+            // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
+            return response()->json([
+                'message' => 'Withdraw request created successfully',
+                'data' => $withdrawRequest,
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th);
+            return response()->json(['error' => $th->getMessage()], 422);
         }
-        // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
-        return response()->json([
-            'message' => 'Withdraw request created successfully',
-            'data' => $withdrawRequest,
-        ]);
     }
 
     /**
