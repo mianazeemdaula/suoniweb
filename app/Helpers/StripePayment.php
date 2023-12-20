@@ -10,6 +10,7 @@ use Stripe\PaymentIntent;
 use Stripe\Account;
 use Stripe\AccountLink;
 use Stripe\Exception\CardException;
+use Stripe\Transfer;
 use Illuminate\Http\Request;
 
 class StripePayment{

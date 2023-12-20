@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 use App\Models\WithdrawRequest;
 use App\Models\DueTransaction;
 
+
+use Stripe\Stripe;
+use Stripe\Transfer;
+
 class WithdrawRequestController extends Controller
 {
     /**
@@ -44,13 +48,21 @@ class WithdrawRequestController extends Controller
         $withdrawRequest->save();
         $auth->balance -= $request->amount;
         $auth->save();
-        DueTransaction::create([
+        $due =  DueTransaction::create([
             'user_id' => $auth->id,
             'user_from' => $auth->id,
             'amount' => -($request->amount),
             'description' => 'Withdraw request created',
             'due_date' => now()->addDays(3),
         ]);
+        if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            Transfer::create([
+                'amount' => $request->amount / 100,
+                'currency' => 'usd',
+                'destination' => $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first()->account,
+            ]);
+        }
         // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
         return response()->json([
             'message' => 'Withdraw request created successfully',
