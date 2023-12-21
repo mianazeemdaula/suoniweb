@@ -97,7 +97,7 @@ class WithdrawRequestController extends Controller
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error($th);
-            return response()->json(['error' => $th->getMessage()], 422);
+            return response()->json(['message' => $th->getMessage()], 422);
         }
     }
 
