@@ -52,7 +52,7 @@ class WithdrawRequestController extends Controller
             $amount = $request->amount;
             $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
             if($account->currency != 'USD'){
-                $rate = Currency::whereName($currency)->first();
+                $rate = Currency::whereName($account->currency)->first();
                 if($rate){
                     $amount = $amount * $rate->rate;
                 }
