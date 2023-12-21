@@ -22,7 +22,10 @@ class WithdrawRequestController extends Controller
      */
     public function index()
     {
-        $data = WithdrawRequest::where('user_id', auth()->user()->id)->latest()->get();
+        $data = WithdrawRequest::where('user_id', auth()->user()->id)
+        ->with(['user' => function($q){
+            $q->select('id','name','image');
+        }])->latest()->get();
         return response()->json($data);
     }
 
