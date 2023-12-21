@@ -78,7 +78,7 @@ class WithdrawRequestController extends Controller
                     $destination = $account->pivot->account;
                     Stripe::setApiKey(env('STRIPE_SECRET'));
                     $transfer = Transfer::create([
-                        'amount' => $amount * 100,
+                        'amount' => intval($amount * 100),
                         'currency' => $account->currency,
                         'destination' => $destination,
                     ]);
