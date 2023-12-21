@@ -7,13 +7,20 @@
     <title>Bank Account</title>
     @vite('resources/css/app.css')
 </head>
-<body>
+<body class="flex items-center justify-center h-screen bg-gray-100">
     {{-- center of the screen using tailwind --}}
-    <div class="flex justify-center h-screen">
-        <div class="w-1/2 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <a href="{{ url("/bank/$account") }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Connect with Stripe
+    <div class="flex justify-center ">
+        <div class="bg-white shadow-md rounded p-4">
+                <a href="javascript:closeWindow();" class=" font-bold py-2 px-4 rounded">
+                    Account is connected
                 </a>
         </div>
+    </div>
+    <script>
+        // write a function to close the window after 3 seconds
+        function closeWindow() {
+            window.close();
+        }
+    </script>
 </body>
 </html>
