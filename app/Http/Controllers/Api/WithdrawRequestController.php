@@ -58,6 +58,7 @@ class WithdrawRequestController extends Controller
             $withdrawRequest->user_id = $auth->id;
             $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
             $withdrawRequest->amount = -($amount);
+            $withdrawRequest->currency = $account->currency;
             $withdrawRequest->save();
             $auth->balance -= $amount;
             $auth->save();
@@ -78,6 +79,9 @@ class WithdrawRequestController extends Controller
                         'currency' => $account->currency,
                         'destination' => $destination,
                     ]);
+                    $withdrawRequest->payment_id = $transfer->id;
+                    $withdrawRequest->account = $destination;
+                    $withdrawRequest->save();
                     $due->update(['description' => 'Withdraw request created, transfer id: ' . $transfer->id]);
                 }
             }
