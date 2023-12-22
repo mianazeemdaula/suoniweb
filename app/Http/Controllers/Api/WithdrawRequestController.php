@@ -65,13 +65,6 @@ class WithdrawRequestController extends Controller
             $withdrawRequest->save();
             $auth->balance -= $amount;
             $auth->save();
-            $due =  DueTransaction::create([
-                'user_id' => $auth->id,
-                'user_from' => $auth->id,
-                'amount' => -($amount),
-                'description' => 'Withdraw request created',
-                'due_date' => now()->addDays(3),
-            ]);
             if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
                 
                 if($account){
@@ -85,7 +78,6 @@ class WithdrawRequestController extends Controller
                     $withdrawRequest->payment_id = $transfer->id;
                     $withdrawRequest->account = $destination;
                     $withdrawRequest->save();
-                    $due->update(['description' => 'Withdraw request created, transfer id: ' . $transfer->id]);
                 }
             }
             DB::commit();

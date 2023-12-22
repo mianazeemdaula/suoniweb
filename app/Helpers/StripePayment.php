@@ -100,7 +100,7 @@ class StripePayment{
             // create account links
             $accountLink = AccountLink::create([
                 'account' => $account->id,
-                'refresh_url' => url("/api/stripe-connect-account-return/$account->id/$user->id"),
+                'refresh_url' => url("/api/stripe-connect-account-refresh/$request->id/$user->id"),
                 'return_url' => url("/api/stripe-connect-account-return/$account->id/$user->id"),
                 'type' => 'account_onboarding',
             ]);
