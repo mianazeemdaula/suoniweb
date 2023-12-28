@@ -223,7 +223,8 @@ class LessionController extends Controller
             }
             // if request is canceled by tutor 
             // return the balance to student
-            if($request->status == 'canceled' && $lession->tutor_id == $user->id){
+            // if($request->status == 'canceled' && $lession->tutor_id == $user->id){
+            if($request->status == 'canceled'){
                 $lession->student->updateBalance($lession->fee, $user->id, 'Refunded');
             }
 

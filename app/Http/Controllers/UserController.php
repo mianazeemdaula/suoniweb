@@ -24,6 +24,7 @@ use App\Models\Lession;
 class UserController extends Controller
 {
     use FormBuilderTrait;
+    
     public function index()
     {
         $collection = User::with('appLoginTime')->get();
