@@ -63,8 +63,8 @@ class LessionController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
             $request->validate([
                 'tutor_id' => 'required|integer',
                 'duration' => 'required|integer',
@@ -167,7 +167,9 @@ class LessionController extends Controller
             }
             if($request->payment_type == 'wallet'){
                 $user = $request->user();
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid');
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance');
+            }else{
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false);
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();

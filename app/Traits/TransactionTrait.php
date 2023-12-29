@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 trait TransactionTrait
 {
 
-    public function updateBalance(float $amount, int $from, string $description = null)
+    public function updateBalance(float $amount, int $from, string $description = null, $balanceUpdate = true )
     {
         // Create a new transaction
         $transaction = new Transaction([
@@ -22,11 +22,13 @@ trait TransactionTrait
         // Associate the transaction with the user
         $this->transactions()->save($transaction);
 
-        // Update the user's balance
-        if($amount > 0){
-            $this->balance += $amount;
-        }else{
-            $this->balance -= abs($amount);
+        if($balanceUpdate){
+            // Update the user's balance
+            if($amount > 0){
+                $this->balance += $amount;
+            }else{
+                $this->balance -= abs($amount);
+            }
         }
         $this->save();
     }

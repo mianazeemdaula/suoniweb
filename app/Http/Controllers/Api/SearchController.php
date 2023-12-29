@@ -27,8 +27,10 @@ class SearchController extends Controller
         $query =  User::with(['tutorRating', 'tutorToughtHours', 'tutorCountReviews', 'tutorVideos', 'tutorTimes' => function ($q) {
             $q->where('from_time', '>=', Carbon::now());
             $q->where('booked', false);
-        }, 'instruments', 'userable'])->withCount(['tutorLessions as active_students' => function ($a) {
-            $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+        }, 'instruments', 'userable'])->withCount(['tutorLessions as student_count' => function($query) {
+            $query->select(DB::raw('count(distinct `student_id`)'));
+        }])->withCount(['tutorLessions as lesson_count' => function($query) {
+            $query->select(DB::raw('count(distinct `id`)'));
         }])->whereHasMorph('userable', Tutor::class, function ($a) {
             $a->where('in_search', false);
         })
@@ -52,8 +54,13 @@ class SearchController extends Controller
             }, 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
                 $a->where('in_search', false);
             })->inRandomOrder();
-            $q->withCount(['tutorLessions as active_students' => function ($a) {
-                $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+            // $q->withCount(['tutorLessions as active_students' => function ($a) {
+            //     $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
+            // }]);
+            $q->withCount(['tutorLessions as student_count' => function($query) {
+                $query->select(DB::raw('count(distinct `student_id`)'));
+            }])->withCount(['tutorLessions as lesson_count' => function($query) {
+                $query->select(DB::raw('count(distinct `id`)'));
             }]);
             if($user){
                 $ids = $user->blockedUsers()->pluck('id');
