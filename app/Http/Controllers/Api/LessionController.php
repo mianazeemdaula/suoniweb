@@ -165,8 +165,8 @@ class LessionController extends Controller
                     $time->save();
                 }
             }
+            $user = $request->user();
             if($request->payment_type == 'wallet'){
-                $user = $request->user();
                 $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance');
             }else{
                 $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false);
