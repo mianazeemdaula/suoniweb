@@ -53,15 +53,11 @@ class SearchController extends Controller
                 $t->where('booked', false);
             }, 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
                 $a->where('in_search', false);
-            })->inRandomOrder();
-            // $q->withCount(['tutorLessions as active_students' => function ($a) {
-            //     $a->select(DB::raw('count(distinct `student_id`) as aggregate'));
-            // }]);
-            $q->withCount(['tutorLessions as student_count' => function($query) {
+            })->withCount(['tutorLessions as student_count' => function($query) {
                 $query->select(DB::raw('count(distinct `student_id`)'));
             }])->withCount(['tutorLessions as lesson_count' => function($query) {
                 $query->select(DB::raw('count(distinct `id`)'));
-            }]);
+            }])->inRandomOrder();
             if($user){
                 $ids = $user->blockedUsers()->pluck('id');
                 $q->whereNotIn('id',$ids);
