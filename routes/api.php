@@ -29,7 +29,7 @@ Route::group(['namespace' => 'App\Http\Controllers'],function () {
     Route::post('user/change-pass','Api\AuthController@changePassword');
 
     Route::resource('tutor', 'Api\TutorController');
-    Route::middleware(['auth:sanctum','throttle:api:1000,1'])->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
 
         // User
         Route::post('auth/update-image', 'Api\AuthController@updateAvatar');
