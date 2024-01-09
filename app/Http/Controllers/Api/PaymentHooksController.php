@@ -83,14 +83,12 @@ class PaymentHooksController extends Controller
                 $userId = $metadata['user_id'];
                 $amount = $event->data['object']['amount'];
                 $currency = strtoupper($event->data['object']['currency'] ?? 'usd');
-                if($currency!= 'USD'){
-                  $rate = Currency::whereName($currency)->first();
-                  if($rate){
-                    $amount = $amount * $rate->rate;
-                  }
+                $amount = ($amount / 100);
+                $rate = Currency::whereName($currency)->first();
+                if($rate){
+                  $amount = $amount * $rate->rate;
                 }
                 $user = User::find($userId);
-                $amount = ($amount / 100);
                 $last = $user->transactions()->where('tx_id', $event->data['object']['id'])->first();
                 if(!$last){
                   $meta = [
