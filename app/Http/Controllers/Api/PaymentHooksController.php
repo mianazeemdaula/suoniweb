@@ -91,18 +91,14 @@ class PaymentHooksController extends Controller
                 }
                 $user = User::find($userId);
                 $amount = ($amount / 100);
-                $last = $user->transactions()->latest()->first();
-                $addNew = true;
-                if($last && $last->amount == $amount){
-                  $createdAt = Carbon::parse($last->created_at);
-                  $now = Carbon::now();
-                  $diffInMint = $now->diffInMinutes($createdAt);
-                  if($diffInMint < 1){
-                    $addNew = false;
-                  }
-                }
-                if($addNew){
-                  User::find($userId)->updateBalance($amount, $userId, 'Topup');
+                $last = $user->transactions()->where('tx_id', $event->data['object']['id'])->first();
+                if(!$last){
+                  $meta = [
+                    'tx_id' => $event->data['object']['id'],
+                    'tx_amount' => $event->data['object']['amount'],
+                    'tx_currency' => $currency,
+                  ];
+                  User::find($userId)->updateBalance($amount, $userId, 'Topup', true, $meta);
                 }
               }
             default:

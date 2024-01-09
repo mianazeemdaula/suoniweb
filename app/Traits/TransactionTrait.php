@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 trait TransactionTrait
 {
 
-    public function updateBalance(float $amount, int $from, string $description = null, $balanceUpdate = true )
+    public function updateBalance(float $amount, int $from, string $description = null, $balanceUpdate = true, array $meta = [] )
     {
         // Create a new transaction
         $transaction = new Transaction([
@@ -18,6 +18,10 @@ trait TransactionTrait
             'user_id' => $this->id,
             'user_from' => $from,
         ]);
+        
+        foreach($meta as $key => $value){
+            $transaction->{$key} = $value;
+        }
 
         // Associate the transaction with the user
         $this->transactions()->save($transaction);
