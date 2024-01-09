@@ -95,7 +95,7 @@ class PaymentHooksController extends Controller
                 if(!$last){
                   $meta = [
                     'tx_id' => $event->data['object']['id'],
-                    'tx_amount' => $event->data['object']['amount'],
+                    'tx_amount' => ($event->data['object']['amount'] / 100),
                     'tx_currency' => $currency,
                   ];
                   User::find($userId)->updateBalance($amount, $userId, 'Topup', true, $meta);
