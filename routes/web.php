@@ -19,10 +19,10 @@ Route::get('/', function () {
 
 
 Route::get('/test/{id}', function($id){
-    $user =  \App\Models\User::find($id);
-    $user->updateBalance(15, 2, 'Earning from lesson');
-    return $user->balance;
-    return \App\Helpers\StripePayment::topupAccount();
+    // $user =  \App\Models\User::find($id);
+    // $user->updateBalance(15, 2, 'Earning from lesson');
+    // return $user->balance;
+    return \App\Helpers\StripePayment::topupAccount( 'GBP');
     return \App\Models\Notifications::whereJsonContains('data->type',"lession")
     ->get();
     $user = \App\Models\User::find($id);

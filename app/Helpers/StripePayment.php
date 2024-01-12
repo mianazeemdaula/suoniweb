@@ -110,15 +110,15 @@ class StripePayment{
         }
     }
 
-    static public function topupAccount() {
+    static public function topupAccount($currency = 'usd') {
         try {
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $topup = \Stripe\Topup::create([
-                'amount' => 10000,
-                'currency' => 'GBP',
+                'amount' => intval(100 * 100),
+                'currency' => $currency,
                 'description' => 'Topup for account',
                 'statement_descriptor' => 'Topup',
-                // 'source' => 'src_18eYalAHEMiOZZp1l9ZTjSU0',
+                'source' => 'tok_bypassPending',
             ]);
             return response()->json($topup);
         } catch (\Throwable $th) {
