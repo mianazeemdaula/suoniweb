@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Notifications;
 use App\Models\Review;
 use App\Models\TutorTime;
+use App\Models\Currency;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,7 @@ class LessionController extends Controller
                     return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
                 }
             }
+            $currency = $request->user()->currency ?? 'USD';
             $group = $request->instrument_id == 21;
             $totalAmount = 0;
             $notifications = [];
@@ -166,9 +168,16 @@ class LessionController extends Controller
                 }
             }
             $user = $request->user();
+            $transAmount = $totalAmount;
+            if($currency != 'USD'){
+                $rate = Currency::whereName($currency)->first();
+                if($rate){
+                    $transAmount = $transAmount / $rate->rate;
+                }
+            }
             $meta = [
-                'tx_amount' => -$totalAmount,
-                'tx_currency' => 'USD',
+                'tx_amount' => -$transAmount,
+                'tx_currency' => $currency,
             ];
             if($request->payment_type == 'wallet'){
                 $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance', true, $meta);
