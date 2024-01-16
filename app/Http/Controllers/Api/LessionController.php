@@ -166,10 +166,14 @@ class LessionController extends Controller
                 }
             }
             $user = $request->user();
+            $meta = [
+                'tx_amount' => -$totalAmount,
+                'tx_currency' => 'USD',
+            ];
             if($request->payment_type == 'wallet'){
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance');
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance', true, $meta);
             }else{
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false);
+                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false, $meta);
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();

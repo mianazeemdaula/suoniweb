@@ -51,12 +51,12 @@ class WithdrawRequestController extends Controller
             ]);
             $amount = $request->amount;
             $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
-            if($account->currency != 'USD'){
-                $rate = Currency::whereName($account->currency)->first();
-                if($rate){
-                    $amount = $amount * $rate->rate;
-                }
-            }
+            // if($account->currency != 'USD'){
+            //     $rate = Currency::whereName($account->currency)->first();
+            //     if($rate){
+            //         $amount = $amount * $rate->rate;
+            //     }
+            // }
             $withdrawRequest = new WithdrawRequest();
             $withdrawRequest->user_id = $auth->id;
             $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
