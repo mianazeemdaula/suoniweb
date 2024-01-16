@@ -172,7 +172,7 @@ class LessionController extends Controller
             if($currency != 'USD'){
                 $rate = Currency::whereName($currency)->first();
                 if($rate){
-                    $transAmount = $transAmount / $rate->rate;
+                    $transAmount = $transAmount * $rate->rate;
                 }
             }
             $meta = [
