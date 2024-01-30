@@ -73,6 +73,8 @@ Route::get('dataseeder', function() {
     return "Done";
 });
 
-Route::get('currencies-seeder', function(){
-
+Route::get('get-balance', function(){
+    Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+    $balance = \Stripe\Balance::retrieve();
+    return collect($balance['connect_reserved'])->where('currency', 'gbp')->first();
 });

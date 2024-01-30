@@ -44,6 +44,8 @@ class WithdrawRequestController extends Controller
     {
         try {
             DB::beginTransaction();
+            
+            Stripe::setApiKey(env('STRIPE_SECRET'));
             $auth = auth()->user();
             $request->validate([
                 'amount' => 'required|numeric|min:1|max:' . $auth->balance,
@@ -51,25 +53,25 @@ class WithdrawRequestController extends Controller
             ]);
             $amount = $request->amount;
             $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
-            // if($account->currency != 'USD'){
-            //     $rate = Currency::whereName($account->currency)->first();
-            //     if($rate){
-            //         $amount = $amount * $rate->rate;
-            //     }
-            // }
+            // check balance form Stipe if avaialable
+            $stripeBalance = Stripe\Balance::retrieve();
+            $balance = collect($stripeBalance['connect_reserved'])->where('currency', strtolower($account->currency))->first();
+            $status = 'pending';
+            if($balance['amount'] > $amount * 100){
+                $status = 'completed';
+            }
             $withdrawRequest = new WithdrawRequest();
             $withdrawRequest->user_id = $auth->id;
             $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
             $withdrawRequest->amount = -($amount);
             $withdrawRequest->currency = $account->currency;
+            $withdrawRequest->status = $status;
             $withdrawRequest->save();
             $auth->balance -= $amount;
             $auth->save();
             if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
-                
                 if($account){
                     $destination = $account->pivot->account;
-                    Stripe::setApiKey(env('STRIPE_SECRET'));
                     $transfer = Transfer::create([
                         'amount' => intval($amount * 100),
                         'currency' => $account->currency,
@@ -78,10 +80,10 @@ class WithdrawRequestController extends Controller
                     $withdrawRequest->payment_id = $transfer->id;
                     $withdrawRequest->account = $destination;
                     $withdrawRequest->save();
+                    $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw done');
                 }
             }
             DB::commit();
-            // $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw request created');
             return response()->json([
                 'message' => 'Withdraw request created successfully',
                 'data' => $withdrawRequest,
