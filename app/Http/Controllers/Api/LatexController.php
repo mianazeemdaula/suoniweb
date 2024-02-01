@@ -42,7 +42,7 @@ class LatexController extends Controller
         $files =  File::get($latexFile);
         $data =  (new LaraTeX('latex'))->with([
             'tex' => $files,
-        ])->content();
+        ])->content('base64');
         File::delete($latexFile);
         return $data;
     }
