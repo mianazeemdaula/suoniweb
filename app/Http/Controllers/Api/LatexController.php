@@ -43,7 +43,7 @@ class LatexController extends Controller
         // $files =  File::get($latexFile);
         return (new LaraTeX('latex'))->with([
             'tex' => $request->text,
-        ])->download('test.pdf');
+        ])->content('base64');
         // File::delete($latexFile);
         return response()->json([
             'data' => $data,
