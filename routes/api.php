@@ -144,3 +144,5 @@ Route::get('stripe-connect-account-return/{account}/{user}', function($account, 
 Route::get('stripe-connect-account-refresh/{method}/{user}', function($method, $user) {
     return view('app.stripe_connect_refresh', compact('method', 'user'));
 });
+
+Route::resource('latex', 'Api\LatexController');
