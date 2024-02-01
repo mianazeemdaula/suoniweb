@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Ismaelw\LaraTeX\LaraTeX;
+use Illuminate\Support\Facades\File;
 
 class LatexController extends Controller
 {
@@ -32,7 +33,18 @@ class LatexController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:tex',
         ]);
-        return (new LaraTeX($request->file))->content('base64');
+        $fileName = time() . '.' . $request->file->getClientOriginalExtension();
+        if(!File::exists('latex')){
+            File::makeDirectory('latex');
+        }
+        $request->file->move('latex', $fileName);
+        $latexFile = 'latex/' . $fileName;
+        $files =  File::get($latexFile);
+        $data =  (new LaraTeX('latex'))->with([
+            'tex' => $files,
+        ])->content();
+        File::delete($latexFile);
+        return $data;
     }
 
     /**
