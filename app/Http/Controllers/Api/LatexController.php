@@ -14,7 +14,7 @@ class LatexController extends Controller
      */
     public function index()
     {
-        //
+        return (new LaraTeX)->dryRun();
     }
 
     /**
