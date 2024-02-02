@@ -31,20 +31,20 @@ class LatexController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:tex',
-            // 'text' => 'required|string',
+            // 'file' => 'required|file|mimes:tex',
+            'text' => 'required|string',
         ]);
-        $fileName = time() . '.' . $request->file->getClientOriginalExtension();
-        if(!File::exists('latex')){
-            File::makeDirectory('latex');
-        }
-        $request->file->move('latex', $fileName);
-        $latexFile = 'latex/' . $fileName;
-        $files =  File::get($latexFile);
+        // $fileName = time() . '.' . $request->file->getClientOriginalExtension();
+        // if(!File::exists('latex')){
+        //     File::makeDirectory('latex');
+        // }
+        // $request->file->move('latex', $fileName);
+        // $latexFile = 'latex/' . $fileName;
+        // $files =  File::get($latexFile);
         $data =  (new LaraTeX('latex'))->with([
-            'tex' => $files,
+            'tex' => $request->text,
         ]);
-        File::delete($latexFile);
+        // File::delete($latexFile);
         return response()->json([
             'data' => $data->content('base64'),
         ]);
