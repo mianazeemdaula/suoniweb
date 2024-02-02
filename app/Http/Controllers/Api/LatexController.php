@@ -45,7 +45,8 @@ class LatexController extends Controller
             'tex' => $files,
         ]);
         File::delete($latexFile);
-        return $data->content('base64');
+        // return $data->content('base64');
+        return $data->inline('filename.pdf');
         // return $data->download('test.pdf');
     }
 
