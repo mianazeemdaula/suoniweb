@@ -46,12 +46,16 @@ class LatexController extends Controller
             'tex' => $request->text,
         ]);
         if($request->model == 'bibtex'){
-            $data = $data->renderBibtex();
+            return response()->json([
+                'data' => $data->renderBibtex()->content('base64'),
+            ]);
+        }else{
+            return response()->json([
+                'data' => $data->content('base64'),
+            ]);
         }
         // File::delete($latexFile);
-        return response()->json([
-            'data' => $data->content('base64'),
-        ]);
+        
         // return $data->inline('filename.pdf');
         // return $data->download('test.pdf');
     }
