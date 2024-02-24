@@ -45,12 +45,12 @@ class LatexController extends Controller
         $data =  (new LaraTeX('latex'))->with([
             'tex' => $request->text,
         ]);
-        // if($request->has('model') && $request->model == 'bibtex'){
-        //     $data = $data->renderBibtex();
-        // }
+        if($request->model == 'bibtex'){
+            $data = $data->renderBibtex();
+        }
         // File::delete($latexFile);
         return response()->json([
-            'data' => $data->renderBibtex()->content('base64'),
+            'data' => $data->content('base64'),
         ]);
         // return $data->inline('filename.pdf');
         // return $data->download('test.pdf');
