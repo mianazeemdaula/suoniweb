@@ -33,6 +33,7 @@ class LatexController extends Controller
         $request->validate([
             // 'file' => 'required|file|mimes:tex',
             'text' => 'required|string',
+            'model' => 'required|string|in:bibtex,pdflatex',
         ]);
         // $fileName = time() . '.' . $request->file->getClientOriginalExtension();
         // if(!File::exists('latex')){
