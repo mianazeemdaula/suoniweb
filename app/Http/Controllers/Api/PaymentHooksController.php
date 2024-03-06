@@ -86,7 +86,7 @@ class PaymentHooksController extends Controller
                 $amount = ($amount / 100);
                 $rate = Currency::whereName($currency)->first();
                 if($rate){
-                  $amount = $amount * $rate->rate;
+                  $amount = $amount / $rate->rate;
                 }
                 $user = User::find($userId);
                 $last = $user->transactions()->where('tx_id', $event->data['object']['id'])->first();
