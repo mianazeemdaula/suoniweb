@@ -25,7 +25,7 @@ class VerifyApiEmail extends Mailable
 
     public function build()
     {
-        return $this->view('emails.verify_app_email')->with([
+        return $this->markdown('emails.verify_app_email')->with([
             'code' => $this->code,
         ])->from('info@txdevs.com', 'Suoni');
     }
