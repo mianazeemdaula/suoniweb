@@ -14,6 +14,7 @@ use App\Models\Currency;
 
 use Stripe\Stripe;
 use Stripe\Transfer;
+use Stripe\Balance;
 
 class WithdrawRequestController extends Controller
 {
@@ -54,7 +55,7 @@ class WithdrawRequestController extends Controller
             $amount = $request->amount;
             $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
             // check balance form Stipe if avaialable
-            $stripeBalance = Stripe\Balance::retrieve();
+            $stripeBalance = Balance::retrieve();
             $balance = collect($stripeBalance['connect_reserved'])->where('currency', strtolower($account->currency))->first();
             $status = 'pending';
             if($balance['amount'] > $amount * 100){

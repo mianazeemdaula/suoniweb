@@ -230,7 +230,11 @@ class LessionController extends Controller
             if($request->status == 'canceled' && $lession->tutor_id != $user->id && $lession->instrument_id  == 21){
                 $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                 if($group){
-                    $user->updateBalance($group->fee, $group->user_id, 'Refunded');
+                    $metadata = [
+                        'tx_amount' => $group->fee,
+                        'tx_currency' => $user->currency,
+                    ];
+                    $user->updateBalance($group->fee, $group->user_id, 'Refunded', true, $metadata);
                     $group->delete();
                 }
                 $lession->status = $lastStatus;
@@ -240,7 +244,12 @@ class LessionController extends Controller
             // return the balance to student
             // if($request->status == 'canceled' && $lession->tutor_id == $user->id){
             if($request->status == 'canceled'){
-                $lession->student->updateBalance($lession->fee, $user->id, 'Refunded');
+                
+                $metadata = [
+                    'tx_amount' => $lession->fee,
+                    'tx_currency' => $lession->student->currency,
+                ];
+                $lession->student->updateBalance($lession->fee, $user->id, 'Refunded', true, $metadata);
             }
 
             // if lesson is finished by tutor
@@ -251,12 +260,20 @@ class LessionController extends Controller
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee * 0.8;
-                        $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid');
+                        $metadata = [
+                            'tx_amount' => $payFee,
+                            'tx_currency' => $lession->tutor->currency,
+                        ];
+                        $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid', true, $metadata);
                     }
                 }else{
                     $payFee = $lession->fee * 0.8;
                     $studentId = $lession->student_id;
-                    $lession->tutor->updateBalance($payFee, $studentId, 'Paid');
+                    $metadata = [
+                        'tx_amount' => $payFee,
+                        'tx_currency' => $lession->tutor->currency,
+                    ];
+                    $lession->tutor->updateBalance($payFee, $studentId, 'Paid', true, $metadata);
                 }
             }
         }
@@ -466,7 +483,11 @@ class LessionController extends Controller
                 $time->save();
                 // if cancel the lesson return the payment to student
                 if($accept == false){
-                    $lession->student->updateBalance($lession->fee, $lession->tutor_id, 'Lesson canceled');
+                    $metadata = [
+                        'tx_amount' => $lession->fee,
+                        'tx_currency' => $lession->student->currency,
+                    ];
+                    $lession->student->updateBalance($lession->fee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
                 }
             }
             // if tutor accepted the request and its a group
@@ -480,7 +501,11 @@ class LessionController extends Controller
 
                     // if cancel the lesson return the payment to student
                     if($accept == false){
-                        $gr->user->updateBalance($gr->fee, $lession->tutor_id, 'Lesson canceled');
+                        $metadata = [
+                            'tx_amount' => $gr->fee,
+                            'tx_currency' => $gr->user->currency,
+                        ];
+                        $gr->user->updateBalance($gr->fee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
                     }
                 }
             }
