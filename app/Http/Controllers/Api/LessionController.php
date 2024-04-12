@@ -77,6 +77,7 @@ class LessionController extends Controller
             $totalPayable = $request->fee * count($request->times);
             if($request->payment_type == 'wallet'){
                 $user = $request->user();
+                $totalPayable = (Currency::whereName($user->currency)->first()->rate ?? 1) * $totalPayable;
                 if($user->balance < $totalPayable){
                     return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
                 }
@@ -109,6 +110,7 @@ class LessionController extends Controller
                     $lession->fee_paid = true;
                     $lession->tutor_time_id = $value['id'];
                     $lession->status = 'approved';
+                    $lession->currency = $currency;
                     $lession->save();
                     $totalAmount += $lession->fee;
                     $lessonIds[] = $lession->id;
@@ -128,6 +130,7 @@ class LessionController extends Controller
                         $user->allowed = true;
                         $user->fee = $request->fee;
                         $user->fee_paid =true;
+                        $user->currency = $currency;
                         $user->save();
                         $totalAmount += $user->fee;
                         $groupIds[] = $user->id;
@@ -169,11 +172,9 @@ class LessionController extends Controller
             }
             $user = $request->user();
             $transAmount = $totalAmount;
-            if($currency != 'USD'){
-                $rate = Currency::whereName($currency)->first();
-                if($rate){
-                    $transAmount = $transAmount * $rate->rate;
-                }
+            $rate = Currency::whereName($currency)->first();
+            if($rate){
+                $transAmount = $transAmount * $rate->rate;
             }
             $meta = [
                 'tx_amount' => -$transAmount,
@@ -230,11 +231,16 @@ class LessionController extends Controller
             if($request->status == 'canceled' && $lession->tutor_id != $user->id && $lession->instrument_id  == 21){
                 $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                 if($group){
+                    $payFee = $group->fee;
+                    $rate = Currency::whereName($g->currency)->first();
+                    if($rate){
+                        $payFee = $payFee / $rate->rate;
+                    }
                     $metadata = [
-                        'tx_amount' => $group->fee,
-                        'tx_currency' => $user->currency,
+                        'tx_amount' => $payFee,
+                        'tx_currency' => $group->currency,
                     ];
-                    $user->updateBalance($group->fee, $group->user_id, 'Refunded', true, $metadata);
+                    $user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
                     $group->delete();
                 }
                 $lession->status = $lastStatus;
@@ -244,12 +250,16 @@ class LessionController extends Controller
             // return the balance to student
             // if($request->status == 'canceled' && $lession->tutor_id == $user->id){
             if($request->status == 'canceled'){
-                
+                $payFee = $lession->fee;
+                $rate = Currency::whereName($g->currency)->first();
+                if($rate){
+                    $payFee = $payFee / $rate->rate;
+                }
                 $metadata = [
-                    'tx_amount' => $lession->fee,
-                    'tx_currency' => $lession->student->currency,
+                    'tx_amount' => $payFee,
+                    'tx_currency' => $lession->currency,
                 ];
-                $lession->student->updateBalance($lession->fee, $user->id, 'Refunded', true, $metadata);
+                $lession->student->updateBalance($payFee, $user->id, 'Refunded', true, $metadata);
             }
 
             // if lesson is finished by tutor
@@ -260,18 +270,26 @@ class LessionController extends Controller
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee * 0.8;
+                        $rate = Currency::whereName($g->currency)->first();
+                        if($rate){
+                            $payFee = $payFee / $rate->rate;
+                        }
                         $metadata = [
                             'tx_amount' => $payFee,
-                            'tx_currency' => $lession->tutor->currency,
+                            'tx_currency' => $g->currency,
                         ];
                         $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid', true, $metadata);
                     }
                 }else{
                     $payFee = $lession->fee * 0.8;
+                    $rate = Currency::whereName($lession->currency)->first();
+                    if($rate){
+                        $payFee = $payFee / $rate->rate;
+                    }
                     $studentId = $lession->student_id;
                     $metadata = [
                         'tx_amount' => $payFee,
-                        'tx_currency' => $lession->tutor->currency,
+                        'tx_currency' => $lession->currency,
                     ];
                     $lession->tutor->updateBalance($payFee, $studentId, 'Paid', true, $metadata);
                 }
@@ -483,11 +501,16 @@ class LessionController extends Controller
                 $time->save();
                 // if cancel the lesson return the payment to student
                 if($accept == false){
+                    $rate = Currency::whereName($lession->currency)->first();
+                    $payFee = $lession->fee;
+                    if($rate){
+                        $payFee = $payFee / $rate->rate;
+                    }
                     $metadata = [
-                        'tx_amount' => $lession->fee,
-                        'tx_currency' => $lession->student->currency,
+                        'tx_amount' => $payFee,
+                        'tx_currency' => $lession->currency,
                     ];
-                    $lession->student->updateBalance($lession->fee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
+                    $lession->student->updateBalance($payFee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
                 }
             }
             // if tutor accepted the request and its a group
@@ -501,11 +524,16 @@ class LessionController extends Controller
 
                     // if cancel the lesson return the payment to student
                     if($accept == false){
+                        $rate = Currency::whereName($gr->currency)->first();
+                        $payFee = $gr->fee;
+                        if($rate){
+                            $payFee = $payFee / $rate->rate;
+                        }
                         $metadata = [
-                            'tx_amount' => $gr->fee,
-                            'tx_currency' => $gr->user->currency,
+                            'tx_amount' => $payFee,
+                            'tx_currency' => $gr->currency,
                         ];
-                        $gr->user->updateBalance($gr->fee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
+                        $gr->user->updateBalance($payFee, $lession->tutor_id, 'Lesson canceled', true, $metadata);
                     }
                 }
             }
