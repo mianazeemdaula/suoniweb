@@ -48,12 +48,19 @@ class WithdrawRequestController extends Controller
             
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $auth = auth()->user();
+            $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
+            if(!$account){
+                return response()->json(['message' => 'Payment gateway not found'], 422);
+            }
+            $amount = $request->amount;
+            $rate = Currency::whereName($account->currency)->first();
+            if($rate){
+                $amount = $amount * $rate->rate;
+            }
             $request->validate([
-                'amount' => 'required|numeric|min:1|max:' . $auth->balance,
+                'amount' => 'required|numeric|min:1|max:' . $amount,
                 'payment_gateway_id' => 'required|exists:payment_gateways,id',
             ]);
-            $amount = $request->amount;
-            $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
             // check balance form Stipe if avaialable
             $stripeBalance = Balance::retrieve();
             $balance = collect($stripeBalance['connect_reserved'])->where('currency', strtolower($account->currency))->first();
@@ -81,7 +88,12 @@ class WithdrawRequestController extends Controller
                     $withdrawRequest->payment_id = $transfer->id;
                     $withdrawRequest->account = $destination;
                     $withdrawRequest->save();
-                    $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw done');
+                    $meta = [
+                        'tx_id' => $transfer->id,
+                        'tx_amount' => -($request->amount),
+                        'tx_currency' => $account->currency,
+                    ];
+                    $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw done', true, $meta);
                 }
             }
             DB::commit();
