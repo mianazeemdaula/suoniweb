@@ -56,6 +56,9 @@ class WithdrawRequestController extends Controller
             if($rate){
                 $amount = $amount / $rate->rate;
             }
+            if($amount > $auth->balance || ($auth->balance - $amount) < 0){
+                return response()->json(['message' => 'Insufficient balance'], 422);
+            }
             $request->validate([
                 'amount' => 'required|numeric|min:1|max:' . $amount,
                 'payment_gateway_id' => 'required|exists:payment_gateways,id',
