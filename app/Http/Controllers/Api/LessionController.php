@@ -269,11 +269,12 @@ class LessionController extends Controller
                 if($lession->instrument_id  == 21){
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
-                        $payFee = $g->fee * 0.8;
+                        $payFee = $g->fee ;
                         $rate = Currency::whereName($g->currency)->first();
                         if($rate){
                             $payFee = $payFee / $rate->rate;
                         }
+                        $payFee = $payFee * 0.8;
                         $metadata = [
                             'tx_amount' => $payFee,
                             'tx_currency' => $g->currency,
@@ -281,11 +282,12 @@ class LessionController extends Controller
                         $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid', true, $metadata);
                     }
                 }else{
-                    $payFee = $lession->fee * 0.8;
+                    $payFee = $lession->fee;
                     $rate = Currency::whereName($lession->currency)->first();
                     if($rate){
                         $payFee = $payFee / $rate->rate;
                     }
+                    $payFee = $payFee * 0.8;
                     $studentId = $lession->student_id;
                     $metadata = [
                         'tx_amount' => $payFee,
