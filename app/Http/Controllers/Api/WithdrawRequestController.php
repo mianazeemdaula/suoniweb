@@ -79,7 +79,6 @@ class WithdrawRequestController extends Controller
             $withdrawRequest->currency = $account->currency;
             $withdrawRequest->status = $status;
             $withdrawRequest->save();
-            $auth->balance -= $amount;
             $auth->save();
             if($withdrawRequest->payment_gateway_id >= 1  && $withdrawRequest->payment_gateway_id <= 3){
                 if($account){
