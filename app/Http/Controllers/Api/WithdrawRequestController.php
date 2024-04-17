@@ -98,6 +98,7 @@ class WithdrawRequestController extends Controller
                         'tx_currency' => $account->currency,
                     ];
                     $auth->updateBalance(-($request->amount), $auth->id, 'Withdraw done', true, $meta);
+                    $withdrawRequest->delete();
                 }
             }
             DB::commit();
