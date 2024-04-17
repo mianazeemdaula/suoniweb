@@ -60,7 +60,7 @@ class WithdrawRequestController extends Controller
                 return response()->json(['message' => 'Insufficient balance'], 422);
             }
             $request->validate([
-                'amount' => 'required|numeric|min:1|max:' . $amount,
+                'amount' => "required|numeric|min:1",
                 'payment_gateway_id' => 'required|exists:payment_gateways,id',
             ]);
             
