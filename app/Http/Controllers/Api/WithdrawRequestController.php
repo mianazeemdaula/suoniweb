@@ -46,7 +46,6 @@ class WithdrawRequestController extends Controller
         try {
             DB::beginTransaction();
             
-            Stripe::setApiKey(env('STRIPE_SECRET'));
             $auth = auth()->user();
             $account = $auth->paymentGateways()->wherePivot('payment_gateway_id', $request->payment_gateway_id)->first();
             if(!$account){
@@ -55,23 +54,25 @@ class WithdrawRequestController extends Controller
             $amount = $request->amount;
             $rate = Currency::whereName($account->currency)->first();
             if($rate){
-                $amount = $amount * $rate->rate;
+                $amount = $amount / $rate->rate;
             }
             $request->validate([
                 'amount' => 'required|numeric|min:1|max:' . $amount,
                 'payment_gateway_id' => 'required|exists:payment_gateways,id',
             ]);
+            
+            Stripe::setApiKey(env('STRIPE_SECRET'));
             // check balance form Stipe if avaialable
             $stripeBalance = Balance::retrieve();
             $balance = collect($stripeBalance['connect_reserved'])->where('currency', strtolower($account->currency))->first();
             $status = 'pending';
-            if($balance['amount'] > $amount * 100){
+            if($balance['amount'] > ($request->amount * 100)){
                 $status = 'completed';
             }
             $withdrawRequest = new WithdrawRequest();
             $withdrawRequest->user_id = $auth->id;
             $withdrawRequest->payment_gateway_id = $request->payment_gateway_id;
-            $withdrawRequest->amount = -($amount);
+            $withdrawRequest->amount = -($request->amount);
             $withdrawRequest->currency = $account->currency;
             $withdrawRequest->status = $status;
             $withdrawRequest->save();
@@ -81,7 +82,7 @@ class WithdrawRequestController extends Controller
                 if($account){
                     $destination = $account->pivot->account;
                     $transfer = Transfer::create([
-                        'amount' => intval($amount * 100),
+                        'amount' => intval($request->amount * 100),
                         'currency' => $account->currency,
                         'destination' => $destination,
                     ]);
