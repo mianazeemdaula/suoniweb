@@ -54,7 +54,7 @@ class WithdrawRequestController extends Controller
             $amount = $request->amount;
             $rate = Currency::whereName($account->currency)->first();
             if($rate){
-                $amount = $amount * $rate->rate;
+                $amount = $amount / $rate->rate;
             }
             if($amount > $auth->balance || ($auth->balance - $amount) < 0){
                 return response()->json(['message' => 'Insufficient balance'], 422);
