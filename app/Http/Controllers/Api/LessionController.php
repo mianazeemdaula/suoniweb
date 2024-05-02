@@ -232,7 +232,7 @@ class LessionController extends Controller
                 $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                 if($group){
                     $payFee = $group->fee;
-                    $rate = Currency::whereName($g->currency)->first();
+                    $rate = Currency::whereName($group->currency)->first();
                     if($rate){
                         $payFee = $payFee / $rate->rate;
                     }
