@@ -251,7 +251,7 @@ class LessionController extends Controller
             // if($request->status == 'canceled' && $lession->tutor_id == $user->id){
             if($request->status == 'canceled'){
                 $payFee = $lession->fee;
-                $rate = Currency::whereName($g->currency)->first();
+                $rate = Currency::whereName($lession->currency)->first();
                 if($rate){
                     $payFee = $payFee / $rate->rate;
                 }
