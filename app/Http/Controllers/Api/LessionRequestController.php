@@ -137,7 +137,7 @@ class LessionRequestController extends Controller
         $user = $request->user();
         $lrequest = LessonRequest::find($id);
         if($lrequest->status == 'approved'){
-            return response()->json(['message' => "Lesson already approved" ], 204);
+            return response()->json(['message' => "Lesson already approved" ], 422);
         }
         $tutorTime = TutorTime::where('user_id', $request->tutor_id)->where('from_time', Carbon::parse($lrequest->start_at)->setTimezone('UTC'))->first();
         if($tutorTime){
@@ -188,7 +188,7 @@ class LessionRequestController extends Controller
             Fcm::sendNotification($notification);
             return $this->show($id);
         }else{
-            return response()->json(['status' => false], 204);
+            return response()->json(['message' => 'Tutor time not matched'], 422);
         }
     }
 
