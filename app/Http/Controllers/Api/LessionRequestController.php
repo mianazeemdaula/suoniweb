@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Notifications;
 use App\Models\Review;
 use App\Models\TutorTime;
+use App\Models\Currency;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -157,11 +158,21 @@ class LessionRequestController extends Controller
             $lession->status = 'approved';
             $lession->fee_paid = true;
             $lession->fee = $request->fee;
+            $lession->currency = $request->currency;
             $lession->save();
             
             if($request->payment_method){
                 if($request->payment_method == 'wallet'){
-                    $user->updateBalance(-$request->fee, $lession->tutor_id, 'Lesson fee');
+                    $transAmount = $request->fee;
+                    $rate = Currency::whereName($request->currency)->first();
+                    if($rate){
+                        $transAmount = $transAmount * $rate->rate;
+                    }
+                    $meta = [
+                        'tx_amount' => -$transAmount,
+                        'tx_currency' => $request->currency,
+                    ];
+                    $user->updateBalance(-$transAmount, $lession->tutor_id, 'Lesson fee',true, $meta);
                 }
             }
             // send notification
