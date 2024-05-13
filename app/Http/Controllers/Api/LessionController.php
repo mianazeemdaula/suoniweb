@@ -227,10 +227,11 @@ class LessionController extends Controller
                 $time->booked = false;
                 $time->save();
             }
-            // If it is a groups lesson and student want it to canceled
-            if($request->status == 'canceled' && $lession->tutor_id != $user->id && $lession->instrument_id  == 21){
-                $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
-                if($group){
+            // if the lesson is group 
+            if($group){
+                // if the lesson is group and student want it to canceled
+                if($request->status == 'canceled' && $lession->tutor_id != $user->id){
+                    $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     $payFee = $group->fee;
                     $rate = Currency::whereName($group->currency)->first();
                     if($rate){
@@ -240,16 +241,30 @@ class LessionController extends Controller
                         'tx_amount' => $payFee,
                         'tx_currency' => $group->currency,
                     ];
-                    $user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
+                    $group->user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
                     $group->delete();
                 }
-                $lession->status = $lastStatus;
-                $lession->save();
+                // if the lesson is group and tutor want it to canceled refund to all group users
+                if($request->status == 'canceled' && $lession->tutor_id === $user->id){
+                    $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                    foreach ($groups as $g) {
+                        $payFee = $g->fee ;
+                        $rate = Currency::whereName($g->currency)->first();
+                        if($rate){
+                            $payFee = $payFee * $rate->rate;
+                        }
+                        $payFee = $payFee * 0.8;
+                        $metadata = [
+                            'tx_amount' => $payFee,
+                            'tx_currency' => $g->currency,
+                        ];
+                        $g->user->updateBalance($payFee, $lession->tutor_id, 'Refunded', true, $metadata);
+                    }
+                    $lession->status = $request->status;
+                    $lession->save();
+                }
             }
-            // if request is canceled by tutor 
-            // return the balance to student
-            // if($request->status == 'canceled' && $lession->tutor_id == $user->id){
-            if($request->status == 'canceled'){
+            if($request->status == 'canceled' && !$group){
                 $payFee = $lession->fee;
                 $rate = Currency::whereName($lession->currency)->first();
                 if($rate){
@@ -260,13 +275,15 @@ class LessionController extends Controller
                     'tx_currency' => $lession->currency,
                 ];
                 $lession->student->updateBalance($payFee, $user->id, 'Refunded', true, $metadata);
+                $lession->status = $request->status;
+                $lession->save();
             }
 
             // if lesson is finished by tutor
             // pay the balance to tutor
 
             if($request->status == 'finished'){
-                if($lession->instrument_id  == 21){
+                if($group){
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee ;
@@ -315,7 +332,7 @@ class LessionController extends Controller
                     $time->save();
                 }
                 // if tutor accepted the request and its a group
-                if($lession->group){
+                if($group){
                     $gr = GroupUser::where('user_id',$lession->student_id)
                     ->where('lesson_id',$lession->id)->first();
                     if($gr){    
