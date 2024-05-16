@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <title>Shop CodeCryptex</title>
+    <title>Suoni | Admin Panel</title>
     <style>
         body {
             font-family: 'Poppins-Regular', sans-serif;
@@ -60,17 +60,18 @@
             <ul class="flex flex-col items-start space-y-4">
                 <li @if ($page == 'home') class="active" @endif>
                     <i class="bi-grid"></i>
-                    <a href="{{ url('dashboard/') }}">Home</a>
+                    <a href="{{ url('home') }}">Home</a>
                 </li>
+                @role('admin')
                 <li @if ($page == 'invoices') class="active" @endif>
                     <i class="bi-receipt"></i>
-                    <a href="{{ route('user.invoices.index') }}">Payments</a>
+                    <a href="{{ route('admin.instrument.index') }}">Instruments</a>
                 </li>
 
-                @role('admin')
+
                 <li @if ($page == 'users') class="active" @endif>
                     <i class="bi-people-fill"></i>
-                    <a href="{{ route('admin.users.index') }}">Users</a>
+                    <a href="{{ route('admin.user.index') }}">Users</a>
                 </li>
                 @endrole
                 <li>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Kris\LaravelFormBuilder\FormBuilderTrait;
 
 use App\Models\User;
 use App\Forms\Admin\UserForm;
@@ -23,7 +22,6 @@ use App\Models\Lession;
 
 class UserController extends Controller
 {
-    use FormBuilderTrait;
     
     public function index()
     {

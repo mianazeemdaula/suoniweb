@@ -9,7 +9,7 @@
         <div class="bg-green-500  p-2 flex justify-between">
             <h2 class="text-white">Users</h2>
             <div class="text-white"></div>
-            <a class="p-2 bg-white rounded-md text-xs" href="{{ route('admin.users.create') }}">Add User</a>
+            <a class="p-2 bg-white rounded-md text-xs" href="{{ route('admin.instrument.create') }}">Add Instrument</a>
         </div>
         <div class="px-4 pb-2">
             <div class="overflow-x-auto mt-2">
@@ -24,40 +24,33 @@
                                 Name</th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email</th>
-                            <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Balance</th>
-
-                                <th scope="col"
-                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tag</th>
+                                Status</th>
                             <th scope="col"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Time</th>
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($users as $item)
+                        @foreach ($collection as $item)
                             <tr class="border-b-2">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-1 whitespace-nowrap text-sm text-gray-500">
                                     {{ $item->id }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 whitespace-nowrap text-sm text-gray-500">
                                     {{ $item->name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $item->email }}
+                                <td class="px-6 whitespace-nowrap text-sm text-gray-500">
+                                    @if ($item->status) <span class="bg-green-200 text-green-500 rounded-full px-2 py-1 text-xs">Active</span> @else <span class="bg-red-200 text-red-500 rounded-full px-2 py-1 text-xs">Inactive</span> @endif
                                 </td>
-
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $item->time_zone }}
+                                <td class="px-6 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $item->updated_at }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $item->rols }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $item->created_at }}
+                                <td class="px-6 whitespace-nowrap text-sm text-gray-500">
+                                    <a href="{{ route('admin.instrument.edit', $item->id) }}" class=""><i class="bi-pencil" ></i> </a>
+                                    {{-- <a href="{{ route('admin.instrument.delete', $item->id) }}" class="text-red-500">Delete</a> --}}
                                 </td>
                             </tr>
                         @endforeach

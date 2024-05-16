@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\InstrumentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -13,9 +15,10 @@ Route::post('login', [ AuthController::class, 'doLogin' ]);
 
 Route::group(['middleware' => 'auth'], function() {
     Route::get('logout', [ AuthController::class, 'logout' ])->name('logout');
-    Route::group(['prefix' => 'admin'], function() {
-       
-        
+    Route::get('home', [ AuthController::class, 'home' ])->name('home');
+    Route::group(['prefix' => 'admin','as' => 'admin.'], function() {
+       Route::resource("user", UserController::class);
+       Route::resource("instrument", InstrumentController::class);
     });
 });
 

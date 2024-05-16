@@ -30,4 +30,9 @@ class AuthController extends Controller
         auth()->logout();
         return redirect()->route('login');
     }
+
+    public function home()
+    {
+        return view('admin.home');
+    }
 }

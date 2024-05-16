@@ -1,3 +1,124 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+
+    .amountinput::-webkit-inner-spin-button,
+    .amountinput::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+@layer components {
+    .responsive-body {
+        @apply md:pl-60 mt-16 bg-slate-100 min-h-screen;
+    }
+
+    .header {
+        @apply fixed top-0 left-0 w-full h-16 z-40 bg-transparent border-b-[1px] border-sky-100 transition-[bg] duration-500 ease-in-out;
+    }
+
+    .header.scrolled {
+        @apply bg-white;
+    }
+
+    .sidebar {
+        @apply fixed top-0 md:top-16 -left-80 md:left-0 w-80 md:w-60 z-50 md:inline-block h-full bg-green-600 shadow-xl transition-all duration-1000 ease-in-out;
+    }
+
+    .sidebar.mobile {
+        @apply translate-x-80;
+    }
+
+    .sidebar ul li {
+        @apply flex items-center space-x-4 text-white transition-all duration-500 ease-in-out;
+    }
+
+    .sidebar ul li:hover {
+        @apply text-slate-200;
+    }
+
+    .sidebar ul li.active {
+        @apply flex items-center space-x-4 text-slate-200;
+    }
+
+    .h2 {
+        @apply font-bold text-lg;
+    }
+
+    .h3 {
+        @apply font-bold text-base;
+    }
+
+    .h4 {
+        @apply font-semibold text-base;
+    }
+
+    .link {
+        @apply text-blue-600 hover:text-blue-800 hover:underline hover:underline-offset-2;
+    }
+
+    .bread-crumb {
+        @apply flex items-center space-x-1 text-sm;
+    }
+
+    .pallet-box {
+        @apply flex w-full rounded-lg bg-white drop-shadow-sm p-4;
+    }
+
+    .pallet-box .title {
+        @apply text-sm text-slate-500 font-thin;
+    }
+
+    .pallet-box .ico {
+        @apply flex justify-center items-center w-12 h-12 rounded-full;
+    }
+
+    .pallet-box .bi {
+        @apply text-[24px];
+    }
+
+    .alert-success {
+        @apply flex items-center bg-green-100 text-green-700 text-sm p-4;
+    }
+
+    .alert-warning {
+        @apply flex items-center bg-orange-100 text-orange-700 text-sm p-4;
+    }
+
+    .alert-danger {
+        @apply flex items-center bg-red-100 text-red-600 text-sm p-4;
+    }
+
+    .btn-blue,
+    button.btn-blue {
+        @apply bg-blue-500 hover:bg-blue-800 duration-200 px-3 py-2 rounded text-slate-50;
+    }
+
+    .divider {
+        @apply border-t border-slate-200 border-dashed;
+    }
+
+    input.custom-input,
+    select.custom-input {
+        @apply bg-transparent border border-gray-300 focus:border-sky-400 focus:ring-sky-100 focus:ring-offset-1 outline-none text-base text-slate-800 py-2 px-3 leading-8 transition-colors duration-200 ease-in-out;
+    }
+
+    .search-box {
+        @apply bg-transparent border-b border-gray-300 focus:ring-indigo-200 focus:bg-transparent focus:border-indigo-500 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out;
+    }
+
+    .step .bi-check-lg {
+        @apply hidden;
+    }
+
+    .step.done {
+        @apply text-secondary;
+    }
+
+    .step.done .bi-check-lg {
+        @apply flex;
+    }
+}

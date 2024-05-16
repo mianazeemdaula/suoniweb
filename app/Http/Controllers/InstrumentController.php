@@ -6,19 +6,13 @@ use App\Forms\Admin\InstrumentForm;
 use App\Forms\Admin\InstrumentEditForm;
 use App\Models\Instrument;
 use Illuminate\Http\Request;
-use Kris\LaravelFormBuilder\FormBuilderTrait;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Str;
 
 class InstrumentController extends Controller
 {
-    use FormBuilderTrait;
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+
     public function index()
     {
         $collection = Instrument::orderBy('order', 'asc')->get();
@@ -32,12 +26,7 @@ class InstrumentController extends Controller
      */
     public function create()
     {
-        $form = $this->form(InstrumentForm::class, [
-            'method' => 'POST',
-            'class' => 'form-horizontal',
-            'url' => route('instrument.store')
-        ]);
-        return view('admin.instrument_category.create', compact('form'));
+        return view('admin.instrument.create');
     }
 
     /**
@@ -48,11 +37,10 @@ class InstrumentController extends Controller
      */
     public function store(Request $request)
     {
-        $form = $this->form(InstrumentForm::class);
-
-        if (!$form->isValid()) {
-            return redirect()->back()->withErrors($form->getErrors())->withInput();
-        }
+        $request->validate([
+            'name' => 'required',
+            'status' => 'required',
+        ]);
         $instrument = new Instrument();
         $instrument->name = $request->name;
         $instrument->status = $request->status;
@@ -63,9 +51,11 @@ class InstrumentController extends Controller
                 $constraint->upsize();
             })->save($name);
             $instrument->logo = $name;
+        }else{
+            $instrument->logo = 'images/harp.png';
         }
         $instrument->save();
-        return redirect()->route('instrument.index')->with('status', 'Instrument Added Successfully');
+        return redirect()->route('admin.instrument.index')->with('status', 'Instrument Added Successfully');
     }
 
     /**
