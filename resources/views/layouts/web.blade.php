@@ -7,11 +7,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Code Cryptex</title>
+    <title>Suoni App</title>
 </head>
 
 <body>
-    @yield('body')
+    <div class="">
+        @yield('content')
+    </div>
     @yield('js')
 </body>
 
