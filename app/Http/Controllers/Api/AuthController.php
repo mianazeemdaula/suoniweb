@@ -271,6 +271,10 @@ class AuthController extends Controller
             $user->userable()->update(['bio' => $request->bio]);
             $inst = [];
             foreach ($request->instruments as $val) {
+                $fee = $val['fee'];
+                if($val['id'] === 22){
+                    $fee = 0;
+                }
                 $inst[$val['id']] = ['fee' => $val['fee'], 'group_fee' => $val['group_fee']];
             }
             $user->instruments()->sync($inst);
