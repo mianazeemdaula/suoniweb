@@ -75,7 +75,7 @@ class LessionController extends Controller
                 'payment_type' => 'required',
             ]);
             $totalPayable = $request->fee * count($request->times);
-            if($request->payment_type == 'wallet'){
+            if($request->payment_type == 'wallet' && $request->instrument_id != 22){
                 $user = $request->user();
                 $totalPayable = (Currency::whereName($user->currency)->first()->rate ?? 1) * $totalPayable;
                 if($user->balance < $totalPayable){
@@ -181,7 +181,9 @@ class LessionController extends Controller
                 'tx_currency' => $currency,
             ];
             if($request->payment_type == 'wallet'){
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance', true, $meta);
+                if($request->instrument_id !== 22){
+                    $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance', true, $meta);
+                }
             }else{
                 $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false, $meta);
             }
