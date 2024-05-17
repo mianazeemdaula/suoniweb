@@ -275,7 +275,7 @@ class AuthController extends Controller
                 if($val['id'] === 22){ // free lesson
                     $fee = 0;
                 }
-                $inst[$val['id']] = ['fee' => $val['fee'], 'group_fee' => $val['group_fee']];
+                $inst[$val['id']] = ['fee' => $fee, 'group_fee' => $val['group_fee']];
             }
             $user->instruments()->sync($inst);
             if ($user->has('languages')) {
