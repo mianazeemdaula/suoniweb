@@ -272,7 +272,7 @@ class AuthController extends Controller
             $inst = [];
             foreach ($request->instruments as $val) {
                 $fee = $val['fee'];
-                if($val['id'] === 22){
+                if($val['id'] === 22){ // free lesson
                     $fee = 0;
                 }
                 $inst[$val['id']] = ['fee' => $val['fee'], 'group_fee' => $val['group_fee']];
