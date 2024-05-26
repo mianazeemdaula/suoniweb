@@ -240,7 +240,7 @@ class LessionController extends Controller
                         $payFee = $payFee / $rate->rate;
                     }
                     $metadata = [
-                        'tx_amount' => $payFee,
+                        'tx_amount' => $group->fee,
                         'tx_currency' => $group->currency,
                     ];
                     $group->user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
@@ -253,11 +253,10 @@ class LessionController extends Controller
                         $payFee = $g->fee ;
                         $rate = Currency::whereName($g->currency)->first();
                         if($rate){
-                            $payFee = $payFee * $rate->rate;
+                            $payFee = $payFee / $rate->rate;
                         }
-                        $payFee = $payFee * 0.8;
                         $metadata = [
-                            'tx_amount' => $payFee,
+                            'tx_amount' => $g->fee,
                             'tx_currency' => $g->currency,
                         ];
                         $g->user->updateBalance($payFee, $lession->tutor_id, 'Refunded', true, $metadata);
@@ -273,7 +272,7 @@ class LessionController extends Controller
                     $payFee = $payFee / $rate->rate;
                 }
                 $metadata = [
-                    'tx_amount' => $payFee,
+                    'tx_amount' => $lession->fee,
                     'tx_currency' => $lession->currency,
                 ];
                 $lession->student->updateBalance($payFee, $user->id, 'Refunded', true, $metadata);
