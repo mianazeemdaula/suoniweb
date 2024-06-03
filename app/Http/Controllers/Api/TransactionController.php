@@ -17,7 +17,7 @@ class TransactionController extends Controller
         $data =  Transaction::where('user_id', auth()->user()->id)
         ->with(['userFrom' => function($q){
             $q->select('id','name','image');
-        }])->whereHave('userFrom')->latest()->get();
+        }])->whereHas('userFrom')->latest()->get();
         return response()->json($data, 200);
     }
 
