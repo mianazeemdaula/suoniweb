@@ -269,13 +269,13 @@ class LessionController extends Controller
                 $payFee = $lession->fee;
                 $rate = Currency::whereName($lession->currency)->first();
                 if($rate){
-                    $payFee = $payFee * $rate->rate;
+                    $payFee = $payFee / $rate->rate;
                 }
                 $metadata = [
                     'tx_amount' => $lession->fee,
                     'tx_currency' => $lession->currency,
                 ];
-                $lession->student->updateBalance($payFee, $user->id, 'Refunded', true, $metadata);
+                $lession->student->updateBalance($payFee, $user->id, 'Refunded test', true, $metadata);
                 $lession->status = $request->status;
                 $lession->save();
             }
