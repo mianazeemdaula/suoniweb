@@ -75,9 +75,9 @@ class LessionController extends Controller
                 'payment_type' => 'required',
             ]);
             $totalPayable = $request->fee * count($request->times);
+            $user = $request->user();
             $exchangeRate = (Currency::whereName($user->currency)->first()->rate ?? 1);
             if($request->payment_type == 'wallet' && $request->instrument_id != 22){
-                $user = $request->user();
                 $totalPayable = $exchangeRate * $totalPayable;
                 if($user->balance < $totalPayable){
                     return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
