@@ -172,7 +172,7 @@ class LessionController extends Controller
             }
             $user = $request->user();
             $transAmount = $totalAmount;
-            $rate = Currency::whereName($currency)->first();
+            $rate = Currency::whereName('USD')->first();
             if($rate){
                 $transAmount = $transAmount * $rate->rate;
             }
@@ -270,7 +270,6 @@ class LessionController extends Controller
                 $rate = Currency::whereName($lession->currency)->first();
                 if($rate){
                     $payFee = $payFee / $rate->rate;
-                    $payFee -= $payFee * 0.8;
                 }
                 $metadata = [
                     'tx_amount' => $lession->fee,
