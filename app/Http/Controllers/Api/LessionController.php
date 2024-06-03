@@ -75,15 +75,17 @@ class LessionController extends Controller
                 'payment_type' => 'required',
             ]);
             $totalPayable = $request->fee * count($request->times);
+            $exchangeRate = (Currency::whereName($user->currency)->first()->rate ?? 1);
             if($request->payment_type == 'wallet' && $request->instrument_id != 22){
                 $user = $request->user();
-                $totalPayable = (Currency::whereName($user->currency)->first()->rate ?? 1) * $totalPayable;
+                $totalPayable = $exchangeRate * $totalPayable;
                 if($user->balance < $totalPayable){
                     return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
                 }
             }
             $currency = $request->user()->currency ?? 'USD';
             $group = $request->instrument_id == 21;
+            $lessonFee = $request->fee * $exchangeRate;
             $totalAmount = 0;
             $notifications = [];
             $lessions = [];
@@ -106,7 +108,7 @@ class LessionController extends Controller
                     $lession->lession_duration = $value['duration'];
                     $lession->start_at = $startDate;
                     $lession->end_at = $endDate;
-                    $lession->fee = $request->fee;
+                    $lession->fee = $lessonFee;
                     $lession->fee_paid = true;
                     $lession->tutor_time_id = $value['id'];
                     $lession->status = 'approved';
@@ -128,7 +130,7 @@ class LessionController extends Controller
                         $user->user_id = $request->user()->id;
                         $user->lesson_id = $lession->id;
                         $user->allowed = true;
-                        $user->fee = $request->fee;
+                        $user->fee = $lessonFee;
                         $user->fee_paid =true;
                         $user->currency = $currency;
                         $user->save();
