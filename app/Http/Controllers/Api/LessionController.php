@@ -270,6 +270,7 @@ class LessionController extends Controller
                 $rate = Currency::whereName($lession->currency)->first();
                 if($rate){
                     $payFee = $payFee / $rate->rate;
+                    $payFee -= $payFee * 0.8;
                 }
                 $metadata = [
                     'tx_amount' => $lession->fee,
