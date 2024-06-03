@@ -277,7 +277,7 @@ class LessionController extends Controller
                     'tx_amount' => $lession->fee,
                     'tx_currency' => $lession->currency,
                 ];
-                $lession->student->updateBalance($payFee, $user->id, 'Refunded test', true, $metadata);
+                $lession->student->updateBalance($payFee, $user->id, 'Refunded', true, $metadata);
                 $lession->status = $request->status;
                 $lession->save();
             }
