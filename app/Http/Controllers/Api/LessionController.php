@@ -136,7 +136,6 @@ class LessionController extends Controller
                         $user->save();
                         $groupIds[] = $user->id;
                     }else{
-                        $totalAmount += $lessonFee;
                         $groupIds[] = $user->id;
                         $gr->allowed = false;
                         $gr->save();
