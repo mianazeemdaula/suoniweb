@@ -134,10 +134,10 @@ class LessionController extends Controller
                         $user->fee_paid =true;
                         $user->currency = $currency;
                         $user->save();
-                        $totalAmount += $user->fee;
+                        $totalAmount += $lessonFee;
                         $groupIds[] = $user->id;
                     }else{
-                        $totalAmount += $user->fee;
+                        $totalAmount += $lessonFee;
                         $groupIds[] = $user->id;
                         $gr->allowed = false;
                         $gr->save();
@@ -174,7 +174,7 @@ class LessionController extends Controller
             }
             $user = $request->user();
             $transAmount = $totalAmount;
-            $rate = Currency::whereName('USD')->first();
+            $rate = Currency::whereName($currency)->first();
             if($rate){
                 $transAmount = $transAmount * $rate->rate;
             }
@@ -234,7 +234,7 @@ class LessionController extends Controller
             // if the lesson is group 
             if($group){
                 // if the lesson is group and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id != $user->id){
+                if($request->status == 'canceled' && $lession->tutor_id !== $user->id){
                     $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     $payFee = $group->fee;
                     $rate = Currency::whereName($group->currency)->first();
