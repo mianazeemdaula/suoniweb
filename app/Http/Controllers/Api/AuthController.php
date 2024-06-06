@@ -130,8 +130,10 @@ class AuthController extends Controller
         ];
 
         $user = User::where('email', $request->email)->withTrashed()->first();
-        $user->restore();
         if ($user) {
+            if($user->deleted_at !=null){
+                $user->restore();
+            }
             if (Auth::attempt($credentials)) {
                 $token = $user->createToken('Auth Token')->plainTextToken;
                 if ($user->hasRole('tutor'))
