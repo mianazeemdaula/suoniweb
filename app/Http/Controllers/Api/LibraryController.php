@@ -77,6 +77,11 @@ class LibraryController extends Controller
 
     public function mixLabs(Request $request)
     {
+        $user = auth()->user();
+        $data = Library::where('student_id', $user->id)->get();
+        return response()->json(['status' => true, 'data' => $data]);
+
+        // old one
         $user1 = $request->user()->id;
         $user2 = $request->user_id;
         $libUsers1 = Lession::where('student_id', $user1)->orWhere('tutor_id', $user1)->get();
