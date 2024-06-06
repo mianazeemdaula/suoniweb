@@ -221,7 +221,7 @@ class LessionController extends Controller
         $user = $request->user();
         $sendToId = 1;
         $body = '';
-        $group = $lession->instrument_id == 21;
+        $group = $lession->instrument_id == 21 || $lession->instrument_id == null;
         $groupUser = null;
         if ($request->status == 'finished' || $request->status == 'canceled') {
             $time = TutorTime::find($lession->tutor_time_id);
@@ -232,7 +232,7 @@ class LessionController extends Controller
             // if the lesson is group 
             if($group){
                 // if the lesson is group and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id !== $user->id){
+                if($request->status == 'canceled' && $lession->tutor_id != $user->id){
                     $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     $payFee = $group->fee;
                     $rate = Currency::whereName($group->currency)->first();
@@ -245,9 +245,7 @@ class LessionController extends Controller
                     ];
                     $group->user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
                     $group->delete();
-                }
-                // if the lesson is group and tutor want it to canceled refund to all group users
-                if($request->status == 'canceled' && $lession->tutor_id === $user->id){
+                }else if($request->status == 'canceled' && $lession->tutor_id === $user->id){
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee ;
