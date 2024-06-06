@@ -245,6 +245,8 @@ class LessionController extends Controller
                     ];
                     $group->user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
                     $group->delete();
+                    $lession->status = 'approved';
+                    $lession->save();
                 }else if($request->status == 'canceled' && $lession->tutor_id === $user->id){
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
