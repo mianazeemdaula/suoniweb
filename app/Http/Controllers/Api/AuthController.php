@@ -129,7 +129,8 @@ class AuthController extends Controller
             'password' => $request->password,
         ];
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)->withTrashed()->first();
+        $user->restore();
         if ($user) {
             if (Auth::attempt($credentials)) {
                 $token = $user->createToken('Auth Token')->plainTextToken;
