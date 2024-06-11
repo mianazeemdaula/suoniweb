@@ -282,7 +282,15 @@ class LessionController extends Controller
 
             if($request->status == 'finished'){
                 if($group){
-                    $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                    $groups = [];
+                    if($lession->tutor_id === $user->id){
+                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                    }else{
+                        $groups = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->get();
+                        $lession->status = 'approved';
+                        $lession->save();
+                    }
+                    
                     foreach ($groups as $g) {
                         $payFee = $g->fee ;
                         $rate = Currency::whereName($g->currency)->first();
