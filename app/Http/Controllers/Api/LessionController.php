@@ -286,7 +286,7 @@ class LessionController extends Controller
                     if($lession->tutor_id === $user->id){
                         $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     }else{
-                        $groups = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->get();
+                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->where('user_id',$user->id)->get();
                         $lession->status = 'approved';
                         $lession->save();
                     }
