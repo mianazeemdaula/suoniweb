@@ -229,7 +229,7 @@ class LessionController extends Controller
             // if the lesson is group 
             if($group){
                 // if the lesson is group and student want it to canceled
-                if($request->status == 'canceled' && $lession->tutor_id != $user->id){
+                if($request->status === 'canceled' && $lession->tutor_id != $user->id){
                     $group = GroupUser::where('lesson_id',$lession->id)->where('user_id',$user->id)->first();
                     $payFee = $group->fee;
                     $rate = Currency::whereName($group->currency)->first();
@@ -244,7 +244,7 @@ class LessionController extends Controller
                     $group->delete();
                     $lession->status = 'approved';
                     $lession->save();
-                }else if($request->status == 'canceled' && $lession->tutor_id === $user->id){
+                }else if($request->status === 'canceled' && $lession->tutor_id === $user->id){
                     $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
                     foreach ($groups as $g) {
                         $payFee = $g->fee ;
@@ -280,11 +280,13 @@ class LessionController extends Controller
             // if lesson is finished by tutor
             // pay the balance to tutor
 
-            if($request->status == 'finished'){
+            if($request->status === 'finished'){
                 if($group){
                     $groups = [];
                     if($lession->tutor_id === $user->id){
-                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();
+                        $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->get();    
+                        $lession->status = 'finished';
+                        $lession->save();
                     }else{
                         $groups = GroupUser::where('lesson_id',$lession->id)->where('allowed',true)->where('user_id',$user->id)->get();
                         $lession->status = 'approved';
