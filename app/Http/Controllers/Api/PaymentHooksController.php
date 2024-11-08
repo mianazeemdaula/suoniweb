@@ -63,29 +63,6 @@ class PaymentHooksController extends Controller
                 $metadata = $event->data['object']['metadata'];
                 if($metadata['type'] == 'lessons') {
                   $lessonIds = [];
-                  // foreach(json_decode($metadata['lessons']) as $l) {
-                  //     $lesson = \App\Models\Lession::find($l);
-                  //     $lesson->fee_paid = true;
-                  //     $lesson->save();
-                  //     $lessonIds[] = $lesson->id;
-                  // }
-                  // foreach(json_decode($metadata['group_lessons']) as $gl) {
-                  //     $group_lesson = \App\Models\GroupUser::find($gl);
-                  //     $group_lesson->fee_paid = true;
-                  //     $group_lesson->save();
-                  //     $lessonIds[] = $gl->lesson->id;
-                  // }
-
-                  // foreach ($lessonIds as $id) {
-                  //   $noti = Notifications::whereJsonContains('data->id', $id)
-                  //   ->whereJsonContains('data->type','lession')
-                  //   ->where('queued',true)->first();
-                  //   if($noti){
-                  //     Fcm::sendNotification($noti);
-                  //     $noti->queued = false;
-                  //     $noti->save();
-                  //   }
-                  // }
                 }else if($metadata['type'] == 'topup') {
                   $userId = $metadata['user_id'];
                   $amount = $event->data['object']['amount'];
@@ -111,9 +88,6 @@ class PaymentHooksController extends Controller
                 echo 'Received unknown event type ' . $event->type;
           }
         }
-        
-        
-        // Log::debug($request->all());
     }
 
 

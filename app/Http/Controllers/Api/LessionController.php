@@ -83,7 +83,7 @@ class LessionController extends Controller
                     return response()->json(['status' => false, 'message' => 'Insufficient balance'], 422);
                 }
             }
-            $currency = $request->user()->currency ?? 'USD';
+            $currency = $user->currency ?? 'USD';
             $group = $request->instrument_id == 21;
             $lessonFee = $request->fee * $exchangeRate;
             $totalAmount = 0;
@@ -172,17 +172,16 @@ class LessionController extends Controller
             }
             $user = $request->user();
             $transAmount = $totalAmount;
-            $transAmount = $transAmount * $exchangeRate;
             $meta = [
                 'tx_amount' => -$transAmount,
                 'tx_currency' => $currency,
             ];
             if($request->payment_type == 'wallet'){
                 if($request->instrument_id !== 22){
-                    $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with balance', true, $meta);
+                    $user->updateBalance(-$totalPayable, $request->tutor_id, 'Paid with balance', true, $meta);
                 }
             }else{
-                $user->updateBalance(-$totalAmount, $request->tutor_id, 'Paid with card', false, $meta);
+                $user->updateBalance(-$totalPayable, $request->tutor_id, 'Paid with card', false, $meta);
             }
             DB::commit();
             $notifications = Notifications::whereIn('id', $notifications)->where('queued',false)->get();
@@ -222,11 +221,11 @@ class LessionController extends Controller
         $groupUser = null;
         if ($request->status == 'finished' || $request->status == 'canceled') {
             $time = TutorTime::find($lession->tutor_time_id);
-            if ($time) {
+            if ($time && !$group) {
                 $time->booked = false;
                 $time->save();
             }
-            // if the lesson is group 
+            // if the lesson is group  lesson
             if($group){
                 // if the lesson is group and student want it to canceled
                 if($request->status === 'canceled' && $lession->tutor_id != $user->id){
