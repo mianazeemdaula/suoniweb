@@ -172,6 +172,7 @@ class LessionController extends Controller
             }
             $user = $request->user();
             $transAmount = $totalAmount;
+            $totalPayable = $request->fee * count($request->times);
             $meta = [
                 'tx_amount' => -$transAmount,
                 'tx_currency' => $currency,
