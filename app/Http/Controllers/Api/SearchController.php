@@ -51,6 +51,7 @@ class SearchController extends Controller
         $data = Instrument::with(['tutors' => function ($q) use($user) {
             $q->with(['tutorRating', 'tutorToughtHours', 'instruments', 'tutorCountReviews', 'tutorVideos', 'tutorTimes' => function($t){
                 $t->where('booked', false);
+                $t->where('from_time', '>=', Carbon::now());
             }, 'userable'])->whereHasMorph('userable', Tutor::class, function ($a) {
                 $a->where('in_search', false);
             })->withCount(['tutorLessions as student_count' => function($query) {
