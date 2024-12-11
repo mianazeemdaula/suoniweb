@@ -41,6 +41,7 @@ class LessionController extends Controller
             $q->orWhereHas('group', function($gr) use($user) {
                 $gr->where('user_id', $user->id);
                 $gr->where('allowed',true);
+                $gr->where('status','accepted');
             });
         })->with(['notes', 'libraries', 'videos', 'tutor', 'student', 'instrument','group.user'])
         ->whereHas('tutor')->whereHas('student')->orderBy('start_at')->get();
