@@ -304,7 +304,7 @@ class LessionController extends Controller
                             'tx_amount' => $payFee,
                             'tx_currency' => $g->currency,
                         ];
-                        $g->udpate(['status' => 'finished']);
+                        $g->update(['status' => 'finished']);
                         $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid', true, $metadata);
                     }
                 }else{
