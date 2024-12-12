@@ -242,7 +242,7 @@ class LessionController extends Controller
                         'tx_currency' => $group->currency,
                     ];
                     $group->user->updateBalance($payFee, $group->user_id, 'Refunded', true, $metadata);
-                    $group->update(['status' => 'cancelled']);
+                    $group->update(['status' => 'cancelled','allowed' => false]);
                     $lession->status = 'approved';
                     $lession->save();
                 }else if($request->status === 'canceled' && $lession->tutor_id === $user->id){
@@ -305,7 +305,7 @@ class LessionController extends Controller
                             'tx_amount' => $payFee,
                             'tx_currency' => $g->currency,
                         ];
-                        $g->update(['status' => 'finished']);
+                        $g->update(['status' => 'finished','allowed' => false]);
                         $lession->tutor->updateBalance($payFee, $g->user_id, 'Paid', true, $metadata);
                     }
                 }else{
