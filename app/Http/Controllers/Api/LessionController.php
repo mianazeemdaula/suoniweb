@@ -134,11 +134,13 @@ class LessionController extends Controller
                         $user->fee = $lessonFee;
                         $user->fee_paid =true;
                         $user->currency = $currency;
+                        $user->status = 'accepted';
                         $user->save();
                         $groupIds[] = $user->id;
                     }else{
                         $groupIds[] = $user->id;
                         $gr->allowed = false;
+                        $gr->status = 'accepted';
                         $gr->save();
                     }
                 }
