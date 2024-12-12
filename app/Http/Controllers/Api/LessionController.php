@@ -139,7 +139,7 @@ class LessionController extends Controller
                         $groupIds[] = $user->id;
                     }else{
                         $groupIds[] = $user->id;
-                        $gr->allowed = false;
+                        $gr->allowed = true;
                         $gr->status = 'accepted';
                         $gr->save();
                     }
