@@ -127,22 +127,17 @@ class LessionController extends Controller
                     // find the last user if lesson already canceld and same user request it again
                     $gr =  GroupUser::where('lesson_id',$lession->id)->where('user_id',$request->user()->id)->first();
                     if(!$gr){
-                        $user = new GroupUser;
-                        $user->user_id = $request->user()->id;
-                        $user->lesson_id = $lession->id;
-                        $user->allowed = true;
-                        $user->fee = $lessonFee;
-                        $user->fee_paid =true;
-                        $user->currency = $currency;
-                        $user->status = 'accepted';
-                        $user->save();
-                        $groupIds[] = $user->id;
-                    }else{
-                        $groupIds[] = $user->id;
-                        $gr->allowed = true;
-                        $gr->status = 'accepted';
-                        $gr->save();
+                        $gr = new GroupUser;
                     }
+                    $gr->user_id = $request->user()->id;
+                    $gr->lesson_id = $lession->id;
+                    $gr->allowed = true;
+                    $gr->fee = $lessonFee;
+                    $gr->fee_paid =true;
+                    $gr->currency = $currency;
+                    $gr->status = 'accepted';
+                    $gr->save();
+                    $groupIds[] = $user->id;
                 }
                 $lessions[] = $lession;
                 $notification = new Notifications(); 
