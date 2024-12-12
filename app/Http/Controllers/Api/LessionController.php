@@ -46,7 +46,7 @@ class LessionController extends Controller
         })->with(['notes', 'libraries', 'videos', 'tutor', 'student', 'instrument','group.user'])
         ->whereHas('tutor')->whereHas('student')->orderBy('start_at')->get();
         $lession = $lession->map(function ($item) use($user) {
-            $groupMember = $item->group()->where('user_id', $user->id)->where('status','!=','accepted')->first();
+            $groupMember = $item->group()->where('user_id', $user->id)->where('allowed',true)->first();
             if(($item->instrument == null || $item->instrument_id == 21) && $item->tutor_id != $user->id && !$groupMember){
                 unset($item);
                 return null;
